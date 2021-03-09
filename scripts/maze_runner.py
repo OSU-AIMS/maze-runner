@@ -40,14 +40,14 @@ def retrieve_pose_from_dream3d():
 
 def main():
 
-  print ""
-  print "----------------------------------------------------------"
-  print "           Maze Runner       (TOP LEVEL)                  "
-  print "----------------------------------------------------------"
-  print "Example developed by ACBUYNAK. Spring 2021"
-  #print "Note: You will be unable to interrupt program if running\n from terminal. Alternatively use IDLE console."
-  #print "Press Enter to advance script when prompted."
-  print ""
+  print("")
+  print("----------------------------------------------------------")
+  print("           Maze Runner       (TOP LEVEL)                  ")
+  print("----------------------------------------------------------")
+  print("Example developed by ACBUYNAK. Spring 2021")
+  #print("Note: You will be unable to interrupt program if running\n from terminal. Alternatively use IDLE console.")
+  #print("Press Enter to advance script when prompted.")
+  print("")
 
 
 
