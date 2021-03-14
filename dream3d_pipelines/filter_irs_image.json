@@ -63,7 +63,7 @@
         }
     },
     "05": {
-        "DestinationArrayName": "Mask_mostlyRed",
+        "DestinationArrayName": "Mask_MazeOnly",
         "FilterVersion": "1.2.815",
         "Filter_Enabled": true,
         "Filter_Human_Label": "Threshold Objects",
@@ -80,8 +80,39 @@
             {
                 "Attribute Array Name": "ImageData_Green",
                 "Attribute Matrix Name": "CellData",
+                "Comparison Operator": 1,
+                "Comparison Value": 200,
+                "Data Container Name": "ImageDataContainer"
+            },
+            {
+                "Attribute Array Name": "ImageData_Blue",
+                "Attribute Matrix Name": "CellData",
+                "Comparison Operator": 1,
+                "Comparison Value": 200,
+                "Data Container Name": "ImageDataContainer"
+            }
+        ]
+    },
+    "06": {
+        "DestinationArrayName": "Mask_mostlyRed",
+        "FilterVersion": "1.2.815",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "Threshold Objects",
+        "Filter_Name": "MultiThresholdObjects",
+        "Filter_Uuid": "{014b7300-cf36-5ede-a751-5faf9b119dae}",
+        "SelectedThresholds": [
+            {
+                "Attribute Array Name": "ImageData_Red",
+                "Attribute Matrix Name": "CellData",
+                "Comparison Operator": 1,
+                "Comparison Value": 180,
+                "Data Container Name": "ImageDataContainer"
+            },
+            {
+                "Attribute Array Name": "ImageData_Green",
+                "Attribute Matrix Name": "CellData",
                 "Comparison Operator": 0,
-                "Comparison Value": 100,
+                "Comparison Value": 110,
                 "Data Container Name": "ImageDataContainer"
             },
             {
@@ -93,7 +124,7 @@
             }
         ]
     },
-    "06": {
+    "07": {
         "DestinationArrayName": "Mask_mostlyGreen",
         "FilterVersion": "1.2.815",
         "Filter_Enabled": true,
@@ -105,26 +136,26 @@
                 "Attribute Array Name": "ImageData_Red",
                 "Attribute Matrix Name": "CellData",
                 "Comparison Operator": 0,
-                "Comparison Value": 90,
+                "Comparison Value": 40,
                 "Data Container Name": "ImageDataContainer"
             },
             {
                 "Attribute Array Name": "ImageData_Green",
                 "Attribute Matrix Name": "CellData",
                 "Comparison Operator": 1,
-                "Comparison Value": 120,
+                "Comparison Value": 110,
                 "Data Container Name": "ImageDataContainer"
             },
             {
                 "Attribute Array Name": "ImageData_Blue",
                 "Attribute Matrix Name": "CellData",
                 "Comparison Operator": 0,
-                "Comparison Value": 90,
+                "Comparison Value": 95,
                 "Data Container Name": "ImageDataContainer"
             }
         ]
     },
-    "07": {
+    "08": {
         "DestinationArrayName": "Mask_mostlyBlue",
         "FilterVersion": "1.2.815",
         "Filter_Enabled": true,
@@ -155,7 +186,7 @@
             }
         ]
     },
-    "08": {
+    "09": {
         "ActiveArrayName": "Active",
         "CellFeatureAttributeMatrixName": "FeatureAttribute_RedDot",
         "FeatureIdsArrayName": "Feature_RedDot",
@@ -177,7 +208,7 @@
         "ScalarTolerance": 1000,
         "UseGoodVoxels": 1
     },
-    "09": {
+    "10": {
         "ActiveArrayName": "Active",
         "CellFeatureAttributeMatrixName": "FeatureAttribute_GreenDot",
         "FeatureIdsArrayName": "Feature_GreenDot",
@@ -199,7 +230,7 @@
         "ScalarTolerance": 1000,
         "UseGoodVoxels": 1
     },
-    "10": {
+    "11": {
         "ActiveArrayName": "Active",
         "CellFeatureAttributeMatrixName": "FeatureAttribute_BlueDot",
         "FeatureIdsArrayName": "Feature_BlueDot",
@@ -221,7 +252,7 @@
         "ScalarTolerance": 1000,
         "UseGoodVoxels": 1
     },
-    "11": {
+    "12": {
         "EquivalentDiametersArrayName": "EquivalentDiameters",
         "FeatureAttributeMatrixName": {
             "Attribute Matrix Name": "FeatureAttribute_RedDot",
@@ -231,27 +262,6 @@
         "FeatureIdsArrayPath": {
             "Attribute Matrix Name": "CellData",
             "Data Array Name": "Feature_RedDot",
-            "Data Container Name": "ImageDataContainer"
-        },
-        "FilterVersion": "6.5.141",
-        "Filter_Enabled": true,
-        "Filter_Human_Label": "Find Feature Sizes",
-        "Filter_Name": "FindSizes",
-        "Filter_Uuid": "{656f144c-a120-5c3b-bee5-06deab438588}",
-        "NumElementsArrayName": "NumElements",
-        "SaveElementSizes": 0,
-        "VolumesArrayName": "Volumes"
-    },
-    "12": {
-        "EquivalentDiametersArrayName": "EquivalentDiameters",
-        "FeatureAttributeMatrixName": {
-            "Attribute Matrix Name": "FeatureAttribute_GreenDot",
-            "Data Array Name": "",
-            "Data Container Name": "ImageDataContainer"
-        },
-        "FeatureIdsArrayPath": {
-            "Attribute Matrix Name": "CellData",
-            "Data Array Name": "Feature_GreenDot",
             "Data Container Name": "ImageDataContainer"
         },
         "FilterVersion": "6.5.141",
@@ -266,6 +276,27 @@
     "13": {
         "EquivalentDiametersArrayName": "EquivalentDiameters",
         "FeatureAttributeMatrixName": {
+            "Attribute Matrix Name": "FeatureAttribute_GreenDot",
+            "Data Array Name": "",
+            "Data Container Name": "ImageDataContainer"
+        },
+        "FeatureIdsArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "Feature_GreenDot",
+            "Data Container Name": "ImageDataContainer"
+        },
+        "FilterVersion": "6.5.141",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "Find Feature Sizes",
+        "Filter_Name": "FindSizes",
+        "Filter_Uuid": "{656f144c-a120-5c3b-bee5-06deab438588}",
+        "NumElementsArrayName": "NumElements",
+        "SaveElementSizes": 0,
+        "VolumesArrayName": "Volumes"
+    },
+    "14": {
+        "EquivalentDiametersArrayName": "EquivalentDiameters",
+        "FeatureAttributeMatrixName": {
             "Attribute Matrix Name": "FeatureAttribute_BlueDot",
             "Data Array Name": "",
             "Data Container Name": "ImageDataContainer"
@@ -284,7 +315,7 @@
         "SaveElementSizes": 0,
         "VolumesArrayName": "Volumes"
     },
-    "14": {
+    "15": {
         "CentroidsArrayPath": {
             "Attribute Matrix Name": "FeatureAttribute_RedDot",
             "Data Array Name": "Centroids",
@@ -301,7 +332,7 @@
         "Filter_Name": "FindFeatureCentroids",
         "Filter_Uuid": "{6f8ca36f-2995-5bd3-8672-6b0b80d5b2ca}"
     },
-    "15": {
+    "16": {
         "CentroidsArrayPath": {
             "Attribute Matrix Name": "FeatureAttribute_GreenDot",
             "Data Array Name": "Centroids",
@@ -318,7 +349,7 @@
         "Filter_Name": "FindFeatureCentroids",
         "Filter_Uuid": "{6f8ca36f-2995-5bd3-8672-6b0b80d5b2ca}"
     },
-    "16": {
+    "17": {
         "CentroidsArrayPath": {
             "Attribute Matrix Name": "FeatureAttribute_BlueDot",
             "Data Array Name": "Centroids",
@@ -335,7 +366,7 @@
         "Filter_Name": "FindFeatureCentroids",
         "Filter_Uuid": "{6f8ca36f-2995-5bd3-8672-6b0b80d5b2ca}"
     },
-    "17": {
+    "18": {
         "CellFeatureAttributeMatrixPath": {
             "Attribute Matrix Name": "FeatureAttribute_RedDot",
             "Data Array Name": "",
@@ -351,14 +382,14 @@
         "WriteNeighborListData": 0,
         "WriteNumFeaturesLine": 0
     },
-    "18": {
+    "19": {
         "CellFeatureAttributeMatrixPath": {
             "Attribute Matrix Name": "FeatureAttribute_GreenDot",
             "Data Array Name": "",
             "Data Container Name": "ImageDataContainer"
         },
         "DelimiterChoiceInt": 0,
-        "FeatureDataFile": "/tmp/SAMPLE/FILEPATH/d3D_processRSimage/result/feature_greenDot.csv",
+        "FeatureDataFile": "/home/aims-ford/AA_research/ws_maze_follower/src/maze-runner/result/realMachineVision/feature_greenDot.csv",
         "FilterVersion": "1.2.815",
         "Filter_Enabled": true,
         "Filter_Human_Label": "Export Feature Data as CSV File",
@@ -367,7 +398,7 @@
         "WriteNeighborListData": 0,
         "WriteNumFeaturesLine": 0
     },
-    "19": {
+    "20": {
         "CellFeatureAttributeMatrixPath": {
             "Attribute Matrix Name": "FeatureAttribute_BlueDot",
             "Data Array Name": "",
@@ -383,35 +414,53 @@
         "WriteNeighborListData": 0,
         "WriteNumFeaturesLine": 0
     },
-    "20": {
-        "FileName": "/tmp/SAMPLE/FILEPATH/d3D_processRSimage/result/feature_RedDot.tiff",
-        "FilterVersion": "1.0.496",
-        "Filter_Enabled": false,
-        "Filter_Human_Label": "ITK::Image Writer",
-        "Filter_Name": "ITKImageWriter",
-        "Filter_Uuid": "{11473711-f94d-5d96-b749-ec36a81ad338}",
-        "ImageArrayPath": {
-            "Attribute Matrix Name": "CellData",
-            "Data Array Name": "Feature_RedDot",
-            "Data Container Name": "ImageDataContainer"
-        },
-        "Plane": 0
-    },
     "21": {
-        "FileName": "/tmp/SAMPLE/FILEPATH/d3D_processRSimage/result/mask_mostlyRed.tiff",
-        "FilterVersion": "1.0.496",
-        "Filter_Enabled": false,
-        "Filter_Human_Label": "ITK::Image Writer",
-        "Filter_Name": "ITKImageWriter",
-        "Filter_Uuid": "{11473711-f94d-5d96-b749-ec36a81ad338}",
-        "ImageArrayPath": {
+        "FilterVersion": "1.2.815",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "Convert AttributeArray Data Type",
+        "Filter_Name": "ConvertData",
+        "Filter_Uuid": "{f4ba5fa4-bb5c-5dd1-9429-0dd86d0ecb37}",
+        "OutputArrayName": "Mask_MazeOnly_int",
+        "ScalarType": 1,
+        "SelectedCellArrayPath": {
             "Attribute Matrix Name": "CellData",
-            "Data Array Name": "Mask_mostlyRed",
+            "Data Array Name": "Mask_MazeOnly",
             "Data Container Name": "ImageDataContainer"
-        },
-        "Plane": 0
+        }
     },
     "22": {
+        "ConditionalArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "Mask_MazeOnly",
+            "Data Container Name": "ImageDataContainer"
+        },
+        "FilterVersion": "1.2.815",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "Replace Value in Array (Conditional)",
+        "Filter_Name": "ConditionalSetValue",
+        "Filter_Uuid": "{47cafe63-83cc-5826-9521-4fb5bea684ef}",
+        "ReplaceValue": 255,
+        "SelectedArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "Mask_MazeOnly_int",
+            "Data Container Name": "ImageDataContainer"
+        }
+    },
+    "23": {
+        "FileName": "/tmp/SAMPLE/FILEPATH/d3D_processRSimage/result/mask_mostlyRed.tiff",
+        "FilterVersion": "1.0.496",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "ITK::Image Writer",
+        "Filter_Name": "ITKImageWriter",
+        "Filter_Uuid": "{11473711-f94d-5d96-b749-ec36a81ad338}",
+        "ImageArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "Mask_MazeOnly_int",
+            "Data Container Name": "ImageDataContainer"
+        },
+        "Plane": 0
+    },
+    "24": {
         "Delimiter": 0,
         "FileExtension": ".txt",
         "FilterVersion": "1.2.815",
@@ -431,9 +480,19 @@
             }
         ]
     },
+    "25": {
+        "FilterVersion": "1.2.815",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "Write DREAM.3D Data File",
+        "Filter_Name": "DataContainerWriter",
+        "Filter_Uuid": "{3fcd4c43-9d75-5b86-aad4-4441bc914f37}",
+        "OutputFile": "/home/aims-ford/AA_research/ws_maze_follower/src/maze-runner/result/realMachineVision/filter_irs_image.dream3d",
+        "WriteTimeSeries": 0,
+        "WriteXdmfFile": 1
+    },
     "PipelineBuilder": {
         "Name": "filter_irs_image",
-        "Number_Filters": 23,
+        "Number_Filters": 26,
         "Version": 6
     }
 }
