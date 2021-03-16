@@ -1,4 +1,10 @@
 # Default ignored files
-result/
+*.pyc
+*.zip
 .idea/
 venv/
+
+# Project Specific
+result/
+mzrun_ws/
+
