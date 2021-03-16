@@ -74,21 +74,21 @@
                 "Attribute Array Name": "ImageData_Red",
                 "Attribute Matrix Name": "CellData",
                 "Comparison Operator": 1,
-                "Comparison Value": 200,
+                "Comparison Value": 180,
                 "Data Container Name": "ImageDataContainer"
             },
             {
                 "Attribute Array Name": "ImageData_Green",
                 "Attribute Matrix Name": "CellData",
                 "Comparison Operator": 1,
-                "Comparison Value": 200,
+                "Comparison Value": 180,
                 "Data Container Name": "ImageDataContainer"
             },
             {
                 "Attribute Array Name": "ImageData_Blue",
                 "Attribute Matrix Name": "CellData",
                 "Comparison Operator": 1,
-                "Comparison Value": 200,
+                "Comparison Value": 180,
                 "Data Container Name": "ImageDataContainer"
             }
         ]
@@ -105,21 +105,21 @@
                 "Attribute Array Name": "ImageData_Red",
                 "Attribute Matrix Name": "CellData",
                 "Comparison Operator": 1,
-                "Comparison Value": 180,
+                "Comparison Value": 130,
                 "Data Container Name": "ImageDataContainer"
             },
             {
                 "Attribute Array Name": "ImageData_Green",
                 "Attribute Matrix Name": "CellData",
                 "Comparison Operator": 0,
-                "Comparison Value": 110,
+                "Comparison Value": 75,
                 "Data Container Name": "ImageDataContainer"
             },
             {
                 "Attribute Array Name": "ImageData_Blue",
                 "Attribute Matrix Name": "CellData",
                 "Comparison Operator": 0,
-                "Comparison Value": 100,
+                "Comparison Value": 90,
                 "Data Container Name": "ImageDataContainer"
             }
         ]
@@ -136,21 +136,21 @@
                 "Attribute Array Name": "ImageData_Red",
                 "Attribute Matrix Name": "CellData",
                 "Comparison Operator": 0,
-                "Comparison Value": 40,
+                "Comparison Value": 60,
                 "Data Container Name": "ImageDataContainer"
             },
             {
                 "Attribute Array Name": "ImageData_Green",
                 "Attribute Matrix Name": "CellData",
                 "Comparison Operator": 1,
-                "Comparison Value": 110,
+                "Comparison Value": 105,
                 "Data Container Name": "ImageDataContainer"
             },
             {
                 "Attribute Array Name": "ImageData_Blue",
                 "Attribute Matrix Name": "CellData",
                 "Comparison Operator": 0,
-                "Comparison Value": 95,
+                "Comparison Value": 100,
                 "Data Container Name": "ImageDataContainer"
             }
         ]
@@ -167,7 +167,7 @@
                 "Attribute Array Name": "ImageData_Red",
                 "Attribute Matrix Name": "CellData",
                 "Comparison Operator": 0,
-                "Comparison Value": 50,
+                "Comparison Value": 70,
                 "Data Container Name": "ImageDataContainer"
             },
             {
@@ -181,7 +181,7 @@
                 "Attribute Array Name": "ImageData_Blue",
                 "Attribute Matrix Name": "CellData",
                 "Comparison Operator": 1,
-                "Comparison Value": 120,
+                "Comparison Value": 100,
                 "Data Container Name": "ImageDataContainer"
             }
         ]
@@ -205,7 +205,7 @@
             "Data Array Name": "ImageData_Red",
             "Data Container Name": "ImageDataContainer"
         },
-        "ScalarTolerance": 1000,
+        "ScalarTolerance": 0,
         "UseGoodVoxels": 1
     },
     "10": {
@@ -415,52 +415,6 @@
         "WriteNumFeaturesLine": 0
     },
     "21": {
-        "FilterVersion": "1.2.815",
-        "Filter_Enabled": true,
-        "Filter_Human_Label": "Convert AttributeArray Data Type",
-        "Filter_Name": "ConvertData",
-        "Filter_Uuid": "{f4ba5fa4-bb5c-5dd1-9429-0dd86d0ecb37}",
-        "OutputArrayName": "Mask_MazeOnly_int",
-        "ScalarType": 1,
-        "SelectedCellArrayPath": {
-            "Attribute Matrix Name": "CellData",
-            "Data Array Name": "Mask_MazeOnly",
-            "Data Container Name": "ImageDataContainer"
-        }
-    },
-    "22": {
-        "ConditionalArrayPath": {
-            "Attribute Matrix Name": "CellData",
-            "Data Array Name": "Mask_MazeOnly",
-            "Data Container Name": "ImageDataContainer"
-        },
-        "FilterVersion": "1.2.815",
-        "Filter_Enabled": true,
-        "Filter_Human_Label": "Replace Value in Array (Conditional)",
-        "Filter_Name": "ConditionalSetValue",
-        "Filter_Uuid": "{47cafe63-83cc-5826-9521-4fb5bea684ef}",
-        "ReplaceValue": 255,
-        "SelectedArrayPath": {
-            "Attribute Matrix Name": "CellData",
-            "Data Array Name": "Mask_MazeOnly_int",
-            "Data Container Name": "ImageDataContainer"
-        }
-    },
-    "23": {
-        "FileName": "/tmp/SAMPLE/FILEPATH/d3D_processRSimage/result/mask_mostlyRed.tiff",
-        "FilterVersion": "1.0.496",
-        "Filter_Enabled": true,
-        "Filter_Human_Label": "ITK::Image Writer",
-        "Filter_Name": "ITKImageWriter",
-        "Filter_Uuid": "{11473711-f94d-5d96-b749-ec36a81ad338}",
-        "ImageArrayPath": {
-            "Attribute Matrix Name": "CellData",
-            "Data Array Name": "Mask_MazeOnly_int",
-            "Data Container Name": "ImageDataContainer"
-        },
-        "Plane": 0
-    },
-    "24": {
         "Delimiter": 0,
         "FileExtension": ".txt",
         "FilterVersion": "1.2.815",
@@ -480,19 +434,119 @@
             }
         ]
     },
-    "25": {
+    "22": {
+        "FilterVersion": "1.2.815",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "Pipeline Annotation",
+        "Filter_Name": "PipelineAnnotation",
+        "Filter_Uuid": "{8cc2198b-6a9d-5bf4-b8c0-b0878bb57f10}",
+        "Summary": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\np, li { white-space: pre-wrap; }\n</style></head><body style=\" font-family:'Sans Serif'; font-size:10pt; font-weight:400; font-style:normal;\">\n<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"
+    },
+    "23": {
         "FilterVersion": "1.2.815",
         "Filter_Enabled": true,
         "Filter_Human_Label": "Write DREAM.3D Data File",
         "Filter_Name": "DataContainerWriter",
         "Filter_Uuid": "{3fcd4c43-9d75-5b86-aad4-4441bc914f37}",
-        "OutputFile": "/home/aims-ford/AA_research/ws_maze_follower/src/maze-runner/result/realMachineVision/filter_irs_image.dream3d",
+        "OutputFile": "/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/filter_irs_image.dream3d",
         "WriteTimeSeries": 0,
         "WriteXdmfFile": 1
     },
+    "24": {
+        "FilterVersion": "1.2.815",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "Convert AttributeArray Data Type",
+        "Filter_Name": "ConvertData",
+        "Filter_Uuid": "{f4ba5fa4-bb5c-5dd1-9429-0dd86d0ecb37}",
+        "OutputArrayName": "Mask_MazeOnly_int",
+        "ScalarType": 1,
+        "SelectedCellArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "Mask_MazeOnly",
+            "Data Container Name": "ImageDataContainer"
+        }
+    },
+    "25": {
+        "ConditionalArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "Mask_MazeOnly",
+            "Data Container Name": "ImageDataContainer"
+        },
+        "FilterVersion": "1.2.815",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "Replace Value in Array (Conditional)",
+        "Filter_Name": "ConditionalSetValue",
+        "Filter_Uuid": "{47cafe63-83cc-5826-9521-4fb5bea684ef}",
+        "ReplaceValue": 255,
+        "SelectedArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "Mask_MazeOnly_int",
+            "Data Container Name": "ImageDataContainer"
+        }
+    },
+    "26": {
+        "FileName": "/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/mask_MazeOnly.tiff",
+        "FilterVersion": "1.0.496",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "ITK::Image Writer",
+        "Filter_Name": "ITKImageWriter",
+        "Filter_Uuid": "{11473711-f94d-5d96-b749-ec36a81ad338}",
+        "ImageArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "Mask_MazeOnly_int",
+            "Data Container Name": "ImageDataContainer"
+        },
+        "Plane": 0
+    },
+    "27": {
+        "FilterVersion": "1.2.815",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "Convert AttributeArray Data Type",
+        "Filter_Name": "ConvertData",
+        "Filter_Uuid": "{f4ba5fa4-bb5c-5dd1-9429-0dd86d0ecb37}",
+        "OutputArrayName": "Mask_Blue_int",
+        "ScalarType": 1,
+        "SelectedCellArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "Mask_mostlyBlue",
+            "Data Container Name": "ImageDataContainer"
+        }
+    },
+    "28": {
+        "ConditionalArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "Mask_mostlyBlue",
+            "Data Container Name": "ImageDataContainer"
+        },
+        "FilterVersion": "1.2.815",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "Replace Value in Array (Conditional)",
+        "Filter_Name": "ConditionalSetValue",
+        "Filter_Uuid": "{47cafe63-83cc-5826-9521-4fb5bea684ef}",
+        "ReplaceValue": 255,
+        "SelectedArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "Mask_Blue_int",
+            "Data Container Name": "ImageDataContainer"
+        }
+    },
+    "29": {
+        "FileName": "/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/mask_mostlyBlue.tiff",
+        "FilterVersion": "1.0.496",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "ITK::Image Writer",
+        "Filter_Name": "ITKImageWriter",
+        "Filter_Uuid": "{11473711-f94d-5d96-b749-ec36a81ad338}",
+        "ImageArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "Mask_Blue_int",
+            "Data Container Name": "ImageDataContainer"
+        },
+        "Plane": 0
+    },
     "PipelineBuilder": {
         "Name": "filter_irs_image",
-        "Number_Filters": 26,
+        "Number_Filters": 30,
         "Version": 6
     }
 }
