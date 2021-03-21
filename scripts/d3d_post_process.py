@@ -19,13 +19,15 @@ class Dream3DPostProcess(object):
     Post-Processor for Dream3D Images
     """
 
-    def __init__(self, userColorList, userInputList, tolerance=1000, mask=False):
+    def __init__(self, userColorList, userInputList, maze_size_meters, tolerance=1000, mask=False):
 
         # Minimum Required
         self.dots = {}
         self.loadDots(userColorList, userInputList, tolerance)
+        self.scale = self.calcScale(self.dots, maze_size_meters)
         self.rotMatrix = self.calcRotation(self.dots)
         self.mazeCentroid = self.calcMazeCentroid(self.dots, self.rotMatrix)
+
 
         # Additional Information
         if mask: self.calcMazeMask(self.dots)
@@ -119,6 +121,29 @@ class Dream3DPostProcess(object):
         
         return mazeCentroid
 
+    def calcScale(self, dots, maze_size_meters):
+        """
+        Find scale (pixels vs world) by comparing pixel length of side of maze with real world length 
+        :param dots: Input Dictionary with three dot keys.
+        :param maze_size_meters: Tuple of length 2. <distance from green-red dot, distance from green-blue dots>
+        :return: scale
+        """
+        side_gr = np.subtract(dots['red']['centroid'],    dots['green']['centroid'])
+        side_gb = np.subtract(dots['blue']['centroid'],   dots['green']['centroid'])
+
+        side_gr_length = np.linalg.norm(side_gr)
+        side_gb_length = np.linalg.norm(side_gb)
+
+        scale_gr = maze_size_meters[0] / side_gr_length
+        scale_gb = maze_size_meters[1] / side_gb_length
+
+        scale = np.average([scale_gr,scale_gb])
+
+        print('\n DEBUG: Found maze real/px scale = ')
+        print(scale)
+
+        return scale
+
     def calcMazeMask(self, dots):
         """
         Generate a mask of region confined by a quadrilateral constrained by the three dot centroids
@@ -183,7 +208,10 @@ def main():
                           '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/feature_blueDot.csv'
                           ]
 
-    d3d = Dream3DPostProcess(color_names, centroid_filepaths)
+    # Realworld Measurement (in meters)
+    maze_size = [0.18, 0.18]
+
+    d3d = Dream3DPostProcess(color_names, centroid_filepaths, maze_size)
 
     print('')
     print(d3d.dots)

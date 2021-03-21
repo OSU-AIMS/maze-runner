@@ -135,6 +135,7 @@ class DataSaver(object):
     setup_dict['images'] = []
     setup_dict['maze_rotationMatrix'] = []
     setup_dict['maze_centroid'] = []
+    setup_dict['scale'] = []
 
     self.all_data = setup_dict
 
@@ -165,6 +166,7 @@ class DataSaver(object):
     add_data['poses'].append(json_message_converter.convert_ros_message_to_json(pose))
     add_data['maze_centroid'].append(np.ndarray.tolist(maze_centroid))
     add_data['maze_rotationMatrix'].append(np.ndarray.tolist(maze_rotationMatrix))
+    add_data['scale'].append(scale)
 
     with open(mzrun_ws + '/camera_poses.json', 'w') as outfile:
       json.dump(add_data, outfile, indent=4)
