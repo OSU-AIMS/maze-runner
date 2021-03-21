@@ -84,8 +84,9 @@ class moveManipulator(object):
   def lookup_pose(self):
     # Get Current Pose of the robot
     pose = self.move_group.get_current_pose(self.eef_link).pose
-    print(pose)
-    print(self.move_group.get_current_rpy(self.eef_link))
+ 
+     #print(pose)
+    #print(self.move_group.get_current_rpy(self.eef_link))
 
     return pose
 
