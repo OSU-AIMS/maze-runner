@@ -106,28 +106,62 @@ def retrieve_pose_from_dream3d(workspace_path, image_path):
   with open(pipeline, 'w') as jsonFile:
     json.dump(data, jsonFile)
 
-  subprocess.call(["/opt/dream3d/bin/PipelineRunner", "-p", pipeline])
+  # Workaround to supress output.
+  d3d_output = open(workspace_path + '/temp_pipelineResult.txt', 'a')
+  subprocess.call(["/opt/dream3d/bin/PipelineRunner", "-p", pipeline], stdout=d3d_output, stderr=d3d_output)
 
-  # Post Process Features to find Rotation
+  featureData_dots_filepaths = [path_redDot, path_greenDot, path_blueDot]
+
+  return featureData_dots_filepaths
+
+
+def characterize_maze(camera, workspace_path, img_id, maze_size, featureData_dots_filepaths):
+
+
+  # Post Process Features to find Rotation, mazeCentroid, mazeScale
   color_names = ["red", "green", "blue"]
-  centroid_filepaths = [path_redDot, path_greenDot, path_blueDot]
+  d3d = Dream3DPostProcess(color_names, featureData_dots_filepaths, maze_size, tolerance=80)
 
-  d3d = Dream3DPostProcess(color_names, centroid_filepaths, tolerance=80)
   rotationMatrix = d3d.rotMatrix
-  centroid = d3d.mazeCentroid
+  mazeCentroid = d3d.mazeCentroid
+  mazeScale = d3d.scale
 
-  return centroid, rotationMatrix
+
+  # Apply Depth Information
+  depth_array = np.load(str(workspace_path) + '/' + str(img_id) + '_depth.npy')
+  
+  for color in color_names:
+
+    # Raw Value Pulled from Depth. Not corrected for length
+    # new_depth = depth_array[d3d.dots[color]['centroid'][0], d3d.dots[color]['centroid'][1]]
+    # print('Depth @ Point', color)
+    # print(new_depth)
+
+    # Corrected Depth Value provided by iRS API.
+    # todo: find cleaner approach to use this, or use intrincis to fix above calculation.
+    correctedDepth = camera.get_depth_at_point(d3d.dots[color]['centroid'][0], d3d.dots[color]['centroid'][1])
+    print('RS Depth @ Point', color)
+    print(correctedDepth)
+
+    d3d.dots[color]['centroid'][2] = correctedDepth
+    print(d3d.dots[color]['centroid'])
+
+  mazeOrigin = d3d.dots['green']['centroid']
+  print(mazeOrigin)
+
+  return mazeCentroid, rotationMatrix, mazeScale, mazeOrigin
 
 
 class DataSaver(object):
   """
   All data saving functions wrapped in one tool.
   """
-  def __init__(self, mzrun_ws, robot, camera):
+  def __init__(self, mzrun_ws, robot, camera, maze_size = [0.18, 0.18]):
     #Setup
     self.workspace = mzrun_ws
     self.robot = robot
     self.camera = camera
+    self.maze_size = maze_size
 
     setup_dict = {}
     setup_dict['counter'] = []
@@ -136,21 +170,25 @@ class DataSaver(object):
     setup_dict['maze_rotationMatrix'] = []
     setup_dict['maze_centroid'] = []
     setup_dict['scale'] = []
+    setup_dict['maze_origin'] = []
 
     self.all_data = setup_dict
 
   def capture(self, img_counter, find_maze=False):
-    img_path = self.camera.capture_singleFrame_color(self.workspace + '/' + str(img_counter))
+    #img_path = self.camera.capture_singleFrame_color(self.workspace + '/' + str(img_counter))
+    img_path = self.camera.capture_singleFrame_alignedRGBD(self.workspace + '/' + str(img_counter))
     pose = self.robot.lookup_pose()
 
     if find_maze: 
       # Run Vision Pipeline, find Location & Rotation of Maze
-      centroid, rotationMatrix = retrieve_pose_from_dream3d(self.workspace, img_path)
-      self.save_data(self.workspace, img_counter, img_path, pose, centroid, rotationMatrix)
-    else:
-      self.save_data(self.workspace, img_counter, img_path, pose, np.array([0]), np.array([0]))
+      featureData_dots_filepaths = retrieve_pose_from_dream3d(self.workspace, img_path)
+      centroid, rotationMatrix, scale, mazeOrigin  = characterize_maze(self.camera, self.workspace, img_id=img_counter, maze_size=self.maze_size, featureData_dots_filepaths=featureData_dots_filepaths)
 
-  def save_data(self, mzrun_ws, img_counter, img_path, pose, maze_centroid, maze_rotationMatrix) :
+      self.save_data(self.workspace, img_counter, img_path, pose, centroid, rotationMatrix, scale, mazeOrigin)
+    else:
+      self.save_data(self.workspace, img_counter, img_path, pose, np.array([0]), np.array([0]), 0, np.array([0]))
+
+  def save_data(self, mzrun_ws, img_counter, img_path, pose, maze_centroid, maze_rotationMatrix, scale, mazeOrigin) :
     """
     Take Photo AND Record Current Robot Position
     :param robot:     Robot Instance
@@ -159,6 +197,7 @@ class DataSaver(object):
     :param image_counter: Counter Input for consequitive location is saved at. 
     :return           Updated Storage Dicitonary
     """
+
     add_data = self.all_data
 
     add_data['counter'].append(img_counter)
@@ -167,11 +206,27 @@ class DataSaver(object):
     add_data['maze_centroid'].append(np.ndarray.tolist(maze_centroid))
     add_data['maze_rotationMatrix'].append(np.ndarray.tolist(maze_rotationMatrix))
     add_data['scale'].append(scale)
+    add_data['maze_origin'].append(np.ndarray.tolist(mazeOrigin))
 
     with open(mzrun_ws + '/camera_poses.json', 'w') as outfile:
       json.dump(add_data, outfile, indent=4)
 
     self.all_data = add_data
+
+  def last_recorded(self):
+    # Build Temporary Dictionary to Return latest Data
+
+    latest_data = {
+      'counter': self.all_data['counter'][-1],
+      'images': self.all_data['images'][-1],
+      'poses' : self.all_data['poses'][-1],
+      'maze_centroid' : self.all_data['maze_centroid'][-1],
+      'maze_rotationMatrix' : self.all_data['maze_rotationMatrix'][-1],
+      'scale' : self.all_data['scale'][-1],
+      'maze_origin' : self.all_data['maze_origin'][-1],
+    }
+
+    return latest_data
 
 
 
@@ -216,16 +271,16 @@ def main():
   ############################
   #Debug Settings
   motion_testing = True
-  
+
   try:
 
     # Setup Robot
     robot = moveManipulator()
     robot.set_accel(0.15)
-    robot.set_vel(0.15)
+    robot.set_vel(0.20)
 
     # Setup Camera
-    camera = REALSENSE_VISION() # Higher Resolution made difficult... (set_color=[1280,720,6], set_depth=[1280,720,6])
+    camera = REALSENSE_VISION(set_color=[640,480,30], set_depth=[640,480,30], max_distance=5.0) # Higher Resolution made difficult... (set_color=[1280,720,6], set_depth=[1280,720,6])
     
     # Setup Working Directory
     dir_mzrun = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -261,17 +316,29 @@ def main():
 
 
     # Increment Robot down for testing
-    for img in range(1,4):
+    for img in range(1,2):
 
       # Move Robot
-      raw_input('incr <enter>')
-      tmp_pose = robot.lookup_pose()
-      tmp_pose.position.z -= 0.2
-
       if motion_testing:
+        raw_input('incr <enter>')
+        tmp_pose = robot.lookup_pose()
+        tmp_pose.position.z -= 0.3
         robot.goto_Quant_Orient(tmp_pose)
 
+      # Capture Data
       database.capture(img, find_maze=True)   
+
+
+      last_mazeOrigin = database.all_data['maze_origin'][-1]
+      last_scale = database.all_data['scale'][-1]
+      
+      print('\nDebug')
+      print('last_origin',last_mazeOrigin)
+      print('last_scale',last_scale)
+
+
+
+
 
 
     ############################

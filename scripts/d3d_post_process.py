@@ -39,7 +39,7 @@ class Dream3DPostProcess(object):
         :param userColorList:   Input List of Dot (color) names (order correlated)
         :param userFileList:    Input List of absolute file paths (order correlated)
         :param tolerance:       Minimum number of volume elements in a color 'blob' to be considered a dot
-        :return self.dots:      Adds centroid information
+        :return self.dots:      3-element Dictionary (3dots) with list of centroid information in each
         """
 
         # Read in Relevant Feature Values from Dream3D Produced FeatureData.csv

@@ -120,9 +120,12 @@ class REALSENSE_VISION(object) :
     config = rs.config()
     opt    = rs.option
 
+    # Set Depth Unit
+    opt.depth_units = 0.001  #0.001 for milimeters   #1.0 for meters
+
     # Enable Depth & Color Streams
     config.enable_stream(rs.stream.depth, set_color[0], set_color[1], rs.format.z16, set_color[2])    #640,480,6   #480,270,30
-    config.enable_stream(rs.stream.color, set_depth[0], set_depth[1], rs.format.bgr8, set_depth[2])   #640,480,30   #424,240,30
+    config.enable_stream(rs.stream.color, set_depth[0], set_depth[1], rs.format.rgb8, set_depth[2])   #640,480,30   #424,240,30
 
     # Start streaming with chosen configuration.
     self.profile = self.pipe.start(config)
@@ -166,7 +169,7 @@ class REALSENSE_VISION(object) :
     align_to = rs.stream.color
     self.align = rs.align(align_to)
 
-  def __init__(self, set_color=[640,480,30], set_depth=[640,480,30], max_distance=5.0):
+  def __init__(self, set_color=[640,480,30], set_depth=[640,480,30], max_distance=10.0):
     """
     Establish first available Intel Realsense Camera found on USB ports.
     Multiple capture tools are also contained within class once initialized.
@@ -221,27 +224,16 @@ class REALSENSE_VISION(object) :
 
       # Render Image from Color Numpy Array
       image = Image.fromarray(bg_removed)
-      image.save(str(name) + ".png")
+      save_path_rgb_bg_removed = str(name) + "_rgb.png"
+      image.save(save_path_rgb_bg_removed)
 
-
-      # Create PLY Output Instance
-      ply = rs.save_to_ply( str(name) + ".ply" )
-
-      # Configure Output PLY
-      ply.set_option(rs.save_to_ply.option_ply_binary, False)
-      ply.set_option(rs.save_to_ply.option_ply_normals, True)
-
-      # Generate Colors for Depth ply
-      # Apply Colorizer (artificial coloring for depth field)
-      colorized = self.colorizer.process(frames_aligned)
-
-      # Apply the processing block to the frameset which contains the depth frame and the texture
-      ply.process(colorized)
+      # Save Depth Array
+      np.save(str(name)+"_depth.npy", depth_image)
 
     finally:
-      print("PLY saved to " + str(name) + ".ply" )
+      print("Image & Depth Array Saved as: " + str(name) )
 
-    return 1
+    return save_path_rgb_bg_removed
 
   def capture_singleFrame_depth(self,name):
     """
@@ -297,9 +289,6 @@ class REALSENSE_VISION(object) :
       # Generate Image as Numpy Array
       color_image = np.asanyarray(color_frame.get_data())
 
-      # Convert output from GBR8 to RGB8
-      color_image = color_image[...,::-1]
-
       # Render Image from Color Numpy Array
       image = Image.fromarray(color_image)
       save_path = str(name) + ".png"
@@ -320,11 +309,22 @@ class REALSENSE_VISION(object) :
     .as_frameset() allows the frames to be filtered as a group and used for later processing.
     """
     frame_filtered = frame
-    frame_filtered = self.deci_filter.process(frame_filtered).as_frameset()
+    #frame_filtered = self.deci_filter.process(frame_filtered).as_frameset()
     frame_filtered = self.threshold_filter.process(frame_filtered).as_frameset()
     frame_filtered = self.spat_filter.process(frame_filtered).as_frameset()
 
     return frame_filtered
+
+  def get_depth_at_point(self, x, y):
+    """
+    Input X,Y position within current camera frame.
+    Returns the DEPTH at that pixel location in METERS.
+    """
+
+    dpt_frame = self.pipe.wait_for_frames().get_depth_frame().as_depth_frame()
+    pixel_distance_in_meters = dpt_frame.get_distance(x,y)
+
+    return pixel_distance_in_meters
 
   def stopRSpipeline(self) :
     # Stop Streaming
@@ -333,13 +333,14 @@ class REALSENSE_VISION(object) :
 
 
 def main():
-  test = CAPTURE_TOOL()
+  camera = REALSENSE_VISION()
   timer_wait()
 
-  result1 = test.capture_singleFrame_alignedRGBD("test1")
-  result2 = test.capture_singleFrame_depth("test2")
+  result1 = camera.capture_singleFrame_alignedRGBD("test1")
+  #result2 = camera.capture_singleFrame_depth("test2")
+  result3 = camera.capture_singleFrame_color("test3")
 
-  test.stopRSpipeline()
+  camera.stopRSpipeline()
 
 if __name__ == '__main__':
   main()
