@@ -1,0 +1,37 @@
+<launch>
+
+  
+  <include file="$(find cluster_r123_moveit_config)/launch/moveit_planning_execution.launch" >
+    <arg name="sim" default="false"/>
+    <arg name="robot_ip" default="192.168.1.110" />
+    <arg name="controller" default="dx200" />
+  </include>
+
+  <include file="$(find realsense2_camera)/launch/rs_rgbd.launch" />
+    <arg name="enable_depth"        default="true"/>
+    <arg name="depth_width"         default="640"/>
+    <arg name="depth_height"        default="480"/>
+    <arg name="depth_fps"           default="16"/>
+
+    <arg name="enable_color"        default="true"/>
+    <arg name="color_width"         default="640"/>
+    <arg name="color_height"        default="480"/>
+    <arg name="color_fps"           default="16"/>
+
+    <arg name="fisheye_width"       default="-1"/>
+    <arg name="fisheye_height"      default="-1"/>
+    <arg name="enable_fisheye"      default="false"/>
+
+    <arg name="align_depth"         default="false"/>
+    <arg name="output"              default="screen"/>  <!-- [ screen | log ]-->
+
+    <arg name="tf_prefix"           default=""/>
+    <arg name="base_frame_id" default="r2_tool_camera"/>
+
+    <arg name="filters"             default="disparity,spatial,temporal"/>
+
+  <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 -1.579 3.14159 r2_tool_camera camera_link 100" />
+
+  <!-- <node pkg="maze-runner" type="visual_camera_positions.py" name="camera_pose_array" output="screen" launch-prefix="gnome-terminal - -command" /> -->
+
+</launch>
