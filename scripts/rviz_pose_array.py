@@ -61,7 +61,7 @@ def node_cameraPoseArray(inputArray):
     rate = rospy.Rate(1) # 10hz
 
     message = geometry_msgs.msg.PoseArray()
-    message.header.frame_id = 'base_link'
+    message.header.frame_id = 'origin'
     message.poses = inputArray
     
     # Publish node
@@ -76,10 +76,23 @@ def node_cameraPoseArray(inputArray):
 ## MAIN CODE ##
 def main():
 
+    #Copied from maze-runner.py
+    import os
+    mzrun_pkg = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    
+    print("AutoInput Pre-Solved Maze Path:  'lab_demo_soln.csv'")
+    solved_maze = '/demo/lab_demo_soln.csv'
+    solved_maze_path = mzrun_pkg + solved_maze
+
+    maze_stool_start = [2.17, -2.42, 0.65, 0.97, 0.242, 0.014, 0.012]
+    starting_orientation = maze_stool_start[-4:]
+
+
+
 
 
     # Process Path into Flat Vector Plane
-    path_as_xyz = prepare_path_transforms_list('tiny_path_soln.csv',scaling_factor=0.05)
+    path_as_xyz = prepare_path_transforms_list(solved_maze_path,scaling_factor=0.02)
 
     # Convert Cartesian Points to Transformation List
     path_as_tf_matrices = prepare_path_tf_ready(path_as_xyz)
@@ -90,8 +103,8 @@ def main():
     tf = transformations()
 
     #body_rot = np.matrix('0 -1 0; 1 0 0; 0 0 1')   # rot(z,90deg)
-    body_rot = np.matrix('0 -0.7071 0.7071; 1 0 0; 0 0.7071 0.7071')  # rot(z,90deg) rot(x,45deg)
-    body_transl = np.matrix('0.3; 0.2; 0')
+    body_rot = np.matrix('1 0 0; 0 1 0; 0 0 1')   # rot(z,90deg)    ##TODO: get from DREAM3D pipeline  body_rot=retrieve_pose_from_dream3d(_)
+    body_transl = np.matrix('1.96846; -2.55415; 0.6500')
     body_frame = tf.generateTransMatrix(body_rot, body_transl)
     #print(body_frame)
 
@@ -104,6 +117,7 @@ def main():
     # Generate PoseArray for ROS Node Publisher
     pose_geom = []
     for i in new_path_poses:
+        i[-4:] = starting_orientation
         pose_geom.append(rosmsg_geoPose(i))
 
 
