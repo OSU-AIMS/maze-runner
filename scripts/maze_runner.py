@@ -156,6 +156,8 @@ class DataSaver(object):
   """
   All data saving functions wrapped in one tool.
   """
+
+  #todo: this assumes only ONE robot planning scene. Actually using TWO scenes. DataSaver does NOT make this distinction when saving poses!!!
   def __init__(self, mzrun_ws, robot, camera, maze_size = [0.18, 0.18]):
     #Setup
     self.workspace = mzrun_ws

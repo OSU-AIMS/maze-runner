@@ -189,6 +189,7 @@ class moveManipulator(object):
 
     if isinstance(pose, list) and len(pose) == 7:
       # Assuming Quant-based Pose List
+      q_orientGoal = pose[-4:]
       pose_goal.orientation.x = q_orientGoal[0]
       pose_goal.orientation.y = q_orientGoal[1]
       pose_goal.orientation.z = q_orientGoal[2]

@@ -11,7 +11,7 @@ def prepare_path_transforms_list(path_source, scaling_factor=0.100):
   path = np.array(dataList[0:], dtype=np.float)
   path = np.append(path, np.zeros((path.shape[0],1)),1)
 
-  while False:
+  if False:
     print(path)
     print(path.shape)
 
