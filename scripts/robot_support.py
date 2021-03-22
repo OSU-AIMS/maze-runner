@@ -52,7 +52,7 @@ def all_close(goal, actual, tolerance):
 
 class moveManipulator(object):
   """moveManipulator Class"""
-  def __init__(self):
+  def __init__(self, eef):
     super(moveManipulator, self).__init__()
 
     ## First initialize `moveit_commander`_ and a `rospy`_ node:
@@ -63,7 +63,7 @@ class moveManipulator(object):
     self.object_name = ''
     self.robot = moveit_commander.RobotCommander()
     self.scene = moveit_commander.PlanningSceneInterface()
-    self.group_name = "r2_eef_camera"         # CHANGE THIS TO MATCH YOUR ROBOT'S MOVEIT CONFIG!
+    self.group_name = eef        # CHANGE THIS TO MATCH YOUR ROBOT'S MOVEIT CONFIG!
     self.move_group = moveit_commander.MoveGroupCommander(self.group_name)
     self.display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
                                                    moveit_msgs.msg.DisplayTrajectory,

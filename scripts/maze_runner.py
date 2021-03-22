@@ -246,28 +246,6 @@ def main():
 
 
 
-  if False:
-    # Set Maze to be Solved
-    #solved_maze_path = raw_input('Input PreSolved Maze Path: ')
-    print("Input Solve Maze Path:  'tiny_path_soln.csv'")
-    solved_maze_path = 'tiny_path_soln.csv'
-
-    # XY Process Path into Transformation List
-    path_as_xyz = prepare_path_transforms_list(solved_maze_path)
-    path_as_tf_matrices = prepare_path_tf_ready(path_as_xyz)
-
-    # Find & Apply Rigid Body Transform to Maze 
-    tf = transformations()
-    body_rot = np.matrix('0 -1 0; 1 0 0; 0 0 1')   # rot(z,90deg)    ##TODO: get from DREAM3D pipeline  body_rot=retrieve_pose_from_dream3d(_)
-    body_transl = np.matrix('0; 0; 0')
-    body_frame = tf.generateTransMatrix(body_rot, body_transl)
-    print('Maze Origin Frame Calculated to be @ ', body_frame)
-
-    # Rotate Path (as Rigid Body) according to body_frame
-    path_via_fixed_frame = tf.convertPath2FixedFrame(path_as_tf_matrices, body_frame)
-
-    # Convert Path of Transforms to Robot Poses
-    new_path_poses = tf.convertPath2RobotPose(path_via_fixed_frame)
 
 
   ############################
@@ -277,16 +255,20 @@ def main():
   try:
 
     # Setup Robot
-    robot = moveManipulator()
-    robot.set_accel(0.15)
-    robot.set_vel(0.20)
+    robot_camera = moveManipulator(eef='r2_eef_camera')
+    robot_camera.set_accel(0.15)
+    robot_camera.set_vel(0.20)
+    robot_pointer = moveManipulator(eef='r2_eef_pointer')
+    robot_pointer.set_accel(0.05)
+    robot_pointer.set_vel(0.05)
+
 
     # Setup Camera
-    camera = REALSENSE_VISION(set_color=[640,480,30], set_depth=[640,480,30], max_distance=5.0) # Higher Resolution made difficult... (set_color=[1280,720,6], set_depth=[1280,720,6])
+    #camera = REALSENSE_VISION(set_color=[640,480,30], set_depth=[640,480,30], max_distance=5.0) # Higher Resolution made difficult... (set_color=[1280,720,6], set_depth=[1280,720,6])
     
     # Setup Working Directory
-    dir_mzrun = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    mzrun_ws = dir_mzrun + '/mzrun_ws'
+    mzrun_pkg = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    mzrun_ws = mzrun_pkg + '/mzrun_ws'
 
     try:
       os.makedirs(mzrun_ws, True)
@@ -296,7 +278,7 @@ def main():
     os.chmod(mzrun_ws, 0777)
 
     # Setup Image Record JSON
-    database = DataSaver(mzrun_ws, robot, camera)
+    #database = DataSaver(mzrun_ws, robot_camera, camera)
     img = 0
 
 
@@ -304,63 +286,113 @@ def main():
     # Move to Known Start Position: All-Zeros
     if motion_testing:
       raw_input('Go to Maze Overlook Crouch Position <enter>')
-      robot.goto_named_target("maze_overlook_crouch")
+      robot_camera.goto_named_target("maze_overlook_crouch")
 
-    # Move to Start Position
-    start_pose = robot.lookup_pose()
-    start_pose.position.z -= 0.7
-    if motion_testing:
-      robot.goto_Quant_Orient(start_pose)
+    # Testing: Increment Robot Down from overloop position
+    if False:
 
-    # Record First Camera Set
-    timer_wait() #ensure camera has had time to buffer initial frames
-    database.capture(img, find_maze=False)
-
-
-    # Increment Robot down for testing
-    for img in range(1,2):
-
-      # Move Robot
+      # Move to Start Position
+      start_pose = robot_camera.lookup_pose()
+      start_pose.position.z -= 0.7
       if motion_testing:
-        raw_input('incr <enter>')
-        tmp_pose = robot.lookup_pose()
-        tmp_pose.position.z -= 0.3
-        robot.goto_Quant_Orient(tmp_pose)
+        robot_camera.goto_Quant_Orient(start_pose)
 
-      # Capture Data
-      database.capture(img, find_maze=True)   
+      # Record First Camera Set
+      timer_wait() #ensure camera has had time to buffer initial frames
+      database.capture(img, find_maze=False)
+
+      for img in range(1,2):
+
+        # Move Robot
+        if motion_testing:
+          raw_input('incr <enter>')
+          tmp_pose = robot_camera.lookup_pose()
+          tmp_pose.position.z -= 0.3
+          robot_camera.goto_Quant_Orient(tmp_pose)
+
+        # Capture Data
+        database.capture(img, find_maze=True)   
 
 
-      last_mazeOrigin = database.all_data['maze_origin'][-1]
-      last_scale = database.all_data['scale'][-1]
-      
-      print('\nDebug')
-      print('last_origin',last_mazeOrigin)
-      print('last_scale',last_scale)
+        last_mazeOrigin = database.all_data['maze_origin'][-1]
+        last_scale = database.all_data['scale'][-1]
+        
+        print('\nDebug')
+        print('last_origin',last_mazeOrigin)
+        print('last_scale',last_scale)
 
 
+    # Path Following Demo:
+    if True:
+
+      #maze_closelook_stool = [2.09, -2.4563, 1.037, 0.707, -0.707, 0, 0]
+      #robot_camera.goto_Quant_Orient(maze_closelook_stool)
+
+      maze_stool_start = [2.05, -2.47, 0.72, 0.97, 0.242, 0.014, 0.012]
+      robot_pointer.goto_Quant_Orient(maze_stool_start)
+
+
+      # Set Maze to be Solved
+      #solved_maze_path = raw_input('Input PreSolved Maze Path: ')
+      print("AutoInput Pre-Solved Maze Path:  'lab_demo_soln.csv'")
+      solved_maze = '/demo/lab_demo_soln.csv'
+      solved_maze_path = mzrun_pkg + solved_maze
+
+      # XY Process Path into Transformation List
+      path_as_xyz = prepare_path_transforms_list(solved_maze_path, scaling_factor=0.020)
+      path_as_tf_matrices = prepare_path_tf_ready(path_as_xyz)
+
+      # Find & Apply Rigid Body Transform to Maze 
+      tf = transformations()
+      body_rot = np.matrix('1 0 0; 0 1 0; 0 0 1')   # rot(z,90deg)    ##TODO: get from DREAM3D pipeline  body_rot=retrieve_pose_from_dream3d(_)
+      body_transl = np.matrix('1.96846; -2.55415; 0.6200')
+      body_frame = tf.generateTransMatrix(body_rot, body_transl)
+      print('Maze Origin Frame Calculated to be @ ', body_frame)
+
+      # Rotate Path (as Rigid Body) according to body_frame
+      path_via_fixed_frame = tf.convertPath2FixedFrame(path_as_tf_matrices, body_frame)
+
+      # Convert Path of Transforms to Robot Poses
+      new_path_poses = tf.convertPath2RobotPose(path_via_fixed_frame)
+      starting_orientation = maze_stool_start[-4:]
+
+      raw_input('>> Begin Solving maze <enter>')
+      for node in new_path_poses:
+        try:
+          # Overwrite Requested Orientation with that of Maze Starting Orientation
+          node[-4:] = starting_orientation
+
+          print('Moved to Pose:')
+          print(node)
+
+          robot_pointer.goto_Quant_Orient(node)
+
+          raw_input('>> Next Pose <enter>')
+
+        except KeyboardInterrupt:
+          return
 
 
 
 
     ############################
     # Close Vision Pipeline
-    camera.stopRSpipeline()
+    #camera.stopRSpipeline()
 
     # Move to Known Start Position: All-Zeros
     if motion_testing:
       raw_input('Go to Maze Overlook Crouch Position <enter>')
-      robot.goto_named_target("maze_overlook_crouch")
+      robot_camera.goto_named_target("maze_overlook_crouch")
 
 
   except rospy.ROSInterruptException:
     # Close Vision Pipeline
-    camera.stopRSpipeline()
+    #camera.stopRSpipeline()
     return
 
   except KeyboardInterrupt:
     # Close Vision Pipeline
-    camera.stopRSpipeline()
+    #camera.stopRSpipeline()
     return
 
 
