@@ -7,31 +7,41 @@
     <arg name="controller" default="dx200" />
   </include>
 
-  <include file="$(find realsense2_camera)/launch/rs_rgbd.launch" />
-    <arg name="enable_depth"        default="true"/>
-    <arg name="depth_width"         default="640"/>
-    <arg name="depth_height"        default="480"/>
-    <arg name="depth_fps"           default="16"/>
+    <!-- Builds upon settings in rs_rgbd.launch w/ these modifications or critical settings. Reference subsequent launch file before modifying. -->
+  <include file="$(find maze-runner)/launch/rs_rgbd_custom.launch" />
+    <arg name="device_type"         value="d435"/>
 
-    <arg name="enable_color"        default="true"/>
-    <arg name="color_width"         default="640"/>
-    <arg name="color_height"        default="480"/>
-    <arg name="color_fps"           default="16"/>
+    <arg name="enable_color"        value="true"/>
+    <arg name="color_width"         value="640"/>
+    <arg name="color_height"        value="480"/>
+    <arg name="color_fps"           value="16"/>
 
-    <arg name="fisheye_width"       default="-1"/>
-    <arg name="fisheye_height"      default="-1"/>
-    <arg name="enable_fisheye"      default="false"/>
+    <arg name="enable_depth"        value="true"/>
+    <arg name="depth_width"         value="640"/>
+    <arg name="depth_height"        value="480"/>
+    <arg name="depth_fps"           value="16"/>
 
-    <arg name="align_depth"         default="false"/>
-    <arg name="output"              default="screen"/>  <!-- [ screen | log ]-->
+    <arg name="align_depth"         value="true"/>
+    <arg name="enable_sync"         value="true"/>
+    <arg name="enable_pointcloud"   value="true"/>
 
-    <arg name="tf_prefix"           default=""/>
-    <arg name="base_frame_id" default="r2_tool_camera"/>
+    <arg name="tf_prefix"           value=""/>
+    <arg name="base_frame_id"       value="r2_tool_camera"/>
+    <arg name="publish_tf"          value="true"/>
+    <arg name="tf_publish_rate"     value="0"/> <!-- 0 - static transform -->
 
-    <arg name="filters"             default="disparity,spatial,temporal"/>
+    <arg name="filters"             value="disparity,spatial,temporal, decimation"/>
 
+    <arg name="odom_frame_id"       value="origin"/>
+    <arg name="enable_pose"         value="true"/>
+    <arg name="publish_odom_tf"     value="true"/>
+
+  <!-- Publish Transform from "camera" to camera mount to correct frame convention disagreements. -->
   <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 -1.579 3.14159 r2_tool_camera camera_link 100" />
 
-  <!-- <node pkg="maze-runner" type="visual_camera_positions.py" name="camera_pose_array" output="screen" launch-prefix="gnome-terminal - -command" /> -->
+  <!-- RVIZ Launch & Config -->
+  <node name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false"
+    args="-d $(find maze-runner)/config/moveit.rviz" output="screen">
+  </node>
 
 </launch>
