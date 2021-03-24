@@ -72,7 +72,7 @@ import cv2
 #####################################################
 
 
-def retrieve_pose_from_dream3d(workspace_path, image_path):
+def retrieve_pose_from_dream3d(workspace_path, image_path, locator_scalar_tolerance=1000):
   """
   Input Dream3D. Don't know what this looks like. 
   Place holder! Yay!
@@ -93,6 +93,11 @@ def retrieve_pose_from_dream3d(workspace_path, image_path):
 
   data["00"]["FileName"] = image_path
 
+  # Feature Segmenter Settings
+  data["14"]["ScalarTolerance"] = locator_scalar_tolerance
+  data["15"]["ScalarTolerance"] = locator_scalar_tolerance
+  data["16"]["ScalarTolerance"] = locator_scalar_tolerance
+
   data["23"]["FeatureDataFile"] = path_redDot
   data["24"]["FeatureDataFile"] = path_greenDot
   data["25"]["FeatureDataFile"] = path_blueDot
@@ -112,7 +117,10 @@ def retrieve_pose_from_dream3d(workspace_path, image_path):
 
   featureData_dots_filepaths = [path_redDot, path_greenDot, path_blueDot]
 
+  print(">> Dream3D Pipeline Runner Complete")
   return featureData_dots_filepaths
+
+
 
 
 def characterize_maze(camera, workspace_path, img_id, maze_size, featureData_dots_filepaths):
@@ -200,7 +208,7 @@ class DataSaver(object):
 
     if find_maze: 
       # Run Vision Pipeline, find Location & Rotation of Maze
-      featureData_dots_filepaths = retrieve_pose_from_dream3d(self.workspace, img_path)
+      featureData_dots_filepaths = retrieve_pose_from_dream3d(self.workspace, img_path, 1000)
       centroid, rotationMatrix, scale, mazeOrigin  = characterize_maze(self.camera, self.workspace, img_id=img_counter, maze_size=self.maze_size, featureData_dots_filepaths=featureData_dots_filepaths)
 
       self.save_data(self.workspace, img_counter, img_path, pose, centroid, rotationMatrix, scale, mazeOrigin)
@@ -333,10 +341,10 @@ def main():
 
         # Capture Data
         database.capture(img, find_maze=True)   
+        latest_data = database.last_recorded()
 
-
-        last_mazeOrigin = database.all_data['maze_origin'][-1]
-        last_scale = database.all_data['scale'][-1]
+        last_mazeOrigin = latest_data['maze_origin']
+        last_scale      = latest_data['scale']
         
         print('\nDebug')
         print('last_origin',last_mazeOrigin)

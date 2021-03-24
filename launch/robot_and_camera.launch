@@ -7,8 +7,9 @@
     <arg name="controller" default="dx200" />
   </include>
 
-    <!-- Builds upon settings in rs_rgbd.launch w/ these modifications or critical settings. Reference subsequent launch file before modifying. -->
-  <include file="$(find maze-runner)/launch/rs_rgbd_custom.launch" />
+
+  <!-- Builds upon settings in rs_rgbd.launch w/ these modifications or critical settings. Reference subsequent launch file before modifying. -->
+<!--   <include file="$(find maze-runner)/launch/rs_rgbd_custom.launch" />
     <arg name="device_type"         value="d435"/>
 
     <arg name="enable_color"        value="true"/>
@@ -28,13 +29,15 @@
     <arg name="tf_prefix"           value=""/>
     <arg name="base_frame_id"       value="r2_tool_camera"/>
     <arg name="publish_tf"          value="true"/>
-    <arg name="tf_publish_rate"     value="0"/> <!-- 0 - static transform -->
+    <arg name="tf_publish_rate"     value="0"/> <!- 0 - static transform ->
 
     <arg name="filters"             value="disparity,spatial,temporal, decimation"/>
 
     <arg name="odom_frame_id"       value="origin"/>
     <arg name="enable_pose"         value="true"/>
     <arg name="publish_odom_tf"     value="true"/>
+
+ -->
 
   <!-- Publish Transform from "camera" to camera mount to correct frame convention disagreements. -->
   <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 -1.579 3.14159 r2_tool_camera camera_link 100" />
@@ -47,5 +50,7 @@
   <node name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false"
     args="-d $(find maze-runner)/config/moveit.rviz" output="screen">
   </node>
+
+
 
 </launch>

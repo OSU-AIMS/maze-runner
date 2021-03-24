@@ -242,8 +242,13 @@ class REALSENSE_VISION(object) :
 
       # Render Image from Color Numpy Array
       image = Image.fromarray(bg_removed)
-      save_path_rgb_bg_removed = str(name) + "_rgb.png"
+      save_path_rgb_bg_removed = str(name) + "_rgb_removedBackground.png"
       image.save(save_path_rgb_bg_removed)
+
+      # Render Image from Color Numpy Array (background NOT REMOVED)
+      image = Image.fromarray(color_image)
+      save_path_rgb = str(name) + "_rgb.png"
+      image.save(save_path_rgb)
 
       # Save Depth Array
       np.save(str(name)+"_depth.npy", depth_image)
@@ -251,7 +256,7 @@ class REALSENSE_VISION(object) :
     finally:
       print("Image & Depth Array Saved as: " + str(name) )
 
-    return save_path_rgb_bg_removed
+    return save_path_rgb
 
   def capture_singleFrame_depth(self,name):
     """
@@ -374,7 +379,7 @@ def main():
   # camera.intrinsics()
 
   result1 = camera.capture_singleFrame_alignedRGBD("test1")
-  #result2 = camera.capture_singleFrame_depth("test2")
+  result2 = camera.capture_singleFrame_depth("test2")
   result3 = camera.capture_singleFrame_color("test3")
 
   camera.stopRSpipeline()
