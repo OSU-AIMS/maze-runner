@@ -54,6 +54,24 @@ def timer_wait():
 
 class REALSENSE_VISION(object) :
 
+  def intrinsics(self):
+    #Camera Intrinsics
+    intrProf = self.pipe.get_active_profile()
+
+
+    self.depth_stream_profile = rs.video_stream_profile(self.profile.get_stream(rs.stream.depth))
+    self.color_stream_profile = rs.video_stream_profile(self.profile.get_stream(rs.stream.color))
+
+    self.intrin_depth = self.depth_stream_profile.get_intrinsics()
+    self.intrin_color = self.color_stream_profile.get_intrinsics()
+
+    if False:
+      print('Intrin for Depth Stream')
+      print(self.intrin_depth)
+
+      print('Intrinsics for Color Stream')
+      print(self.intrin_color)
+
   def enableAdvancedMode(self) :
     """Enables Advanced Mode on Qualifying Realsense Devices"""
 
@@ -317,7 +335,7 @@ class REALSENSE_VISION(object) :
 
   def get_depth_at_point(self, x, y):
     """
-    Input X,Y position within current camera frame.
+    Input X,Y PIXEL coordinates within current camera frame.
     Returns the DEPTH at that pixel location in METERS.
     """
 
@@ -325,6 +343,23 @@ class REALSENSE_VISION(object) :
     pixel_distance_in_meters = dpt_frame.get_distance(x,y)
 
     return pixel_distance_in_meters
+
+  def get_3d_coordinate_at_point(self, depth_pixel_coordinate, depth_value):
+    """
+    :param depth_intrin:            Camera intrinsics for depth stream
+    :param depth_pixel_coordinate:  Desired pixel coordinate in list form [X,Y]
+    :param depth_value:             Depth Value in Meters
+    :return:                        List of XYZ points
+    """
+
+    self.intrinsics()
+
+    depth_intrin = self.intrin_depth
+
+    depth_point_in_meters_camera_coords = rs.rs2_deproject_pixel_to_point(depth_intrin, depth_pixel_coordinate, depth_value)
+
+    return depth_point_in_meters_camera_coords
+
 
   def stopRSpipeline(self) :
     # Stop Streaming
@@ -335,6 +370,8 @@ class REALSENSE_VISION(object) :
 def main():
   camera = REALSENSE_VISION()
   timer_wait()
+
+  # camera.intrinsics()
 
   result1 = camera.capture_singleFrame_alignedRGBD("test1")
   #result2 = camera.capture_singleFrame_depth("test2")

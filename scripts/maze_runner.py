@@ -139,16 +139,33 @@ def characterize_maze(camera, workspace_path, img_id, maze_size, featureData_dot
 
     # Corrected Depth Value provided by iRS API.
     # todo: find cleaner approach to use this, or use intrincis to fix above calculation.
-    correctedDepth = camera.get_depth_at_point(d3d.dots[color]['centroid'][0], d3d.dots[color]['centroid'][1])
+    pixel_coord = [d3d.dots[color]['centroid'][0], d3d.dots[color]['centroid'][1]]
+
+    correctedDepth = camera.get_depth_at_point(pixel_coord[0], pixel_coord[1])
     print('RS Depth @ Point', color)
     print(correctedDepth)
 
     d3d.dots[color]['centroid'][2] = correctedDepth
     print(d3d.dots[color]['centroid'])
 
+    # Transform Dots into World Coordinates
+    x, y, z = camera.get_3d_coordinate_at_point(pixel_coord, correctedDepth)
+    d3d.dots[color]['centroid_camera_frame'] = [0,0,0] #temporary filler
+    d3d.dots[color]['centroid_camera_frame'][0] = x
+    d3d.dots[color]['centroid_camera_frame'][1] = y
+    d3d.dots[color]['centroid_camera_frame'][2] = z 
+
+    print("START DEBUGGING HERE NEXT")
+    print("REAL DOT COORDINATES", color)
+    print(x,y,z)
+    print('')
+
+
   mazeOrigin = d3d.dots['green']['centroid']
   print(mazeOrigin)
 
+
+  print(">> Characterize Maze, Complete.")
   return mazeCentroid, rotationMatrix, mazeScale, mazeOrigin
 
 
@@ -251,6 +268,8 @@ def main():
   ############################
   #Debug Settings
   motion_testing = True
+  camera_testing = True
+  path_testing   = False
 
   try:
 
@@ -264,7 +283,8 @@ def main():
 
 
     # Setup Camera
-    #camera = REALSENSE_VISION(set_color=[640,480,30], set_depth=[640,480,30], max_distance=5.0) # Higher Resolution made difficult... (set_color=[1280,720,6], set_depth=[1280,720,6])
+    if camera_testing:
+      camera = REALSENSE_VISION(set_color=[640,480,30], set_depth=[640,480,30], max_distance=5.0) # Higher Resolution made difficult... (set_color=[1280,720,6], set_depth=[1280,720,6])
     
     # Setup Working Directory
     mzrun_pkg = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -278,7 +298,8 @@ def main():
     os.chmod(mzrun_ws, 0777)
 
     # Setup Image Record JSON
-    #database = DataSaver(mzrun_ws, robot_camera, camera)
+    if camera_testing:
+      database = DataSaver(mzrun_ws, robot_camera, camera)
     img = 0
 
 
@@ -289,7 +310,7 @@ def main():
       robot_camera.goto_named_target("maze_overlook_crouch")
 
     # Testing: Increment Robot Down from overloop position
-    if False:
+    if camera_testing:
 
       # Move to Start Position
       start_pose = robot_camera.lookup_pose()
@@ -323,7 +344,7 @@ def main():
 
 
     # Path Following Demo:
-    if True:
+    if path_testing:
 
       #maze_closelook_stool = [2.09, -2.4563, 1.037, 0.707, -0.707, 0, 0]
       #robot_camera.goto_Quant_Orient(maze_closelook_stool)
@@ -367,7 +388,7 @@ def main():
 
           robot_pointer.goto_Quant_Orient(node)
 
-          raw_input('>> Next Pose <enter>')
+          #raw_input('>> Next Pose <enter>')
 
         except KeyboardInterrupt:
           return
