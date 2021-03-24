@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="maze-runner" type="tf_camera_transform_publisher.py"  name="tf_origin_to_camera_transform" output="log" respawn="true" />
+</launch>
