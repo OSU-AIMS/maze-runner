@@ -10,6 +10,8 @@
 
 #### IMPORTS ####
 import csv
+import cv2
+import os
 import numpy as np
 
 
@@ -19,7 +21,7 @@ class Dream3DPostProcess(object):
     Post-Processor for Dream3D Images
     """
 
-    def __init__(self, userColorList, userInputList, maze_size_meters, tolerance=1000, mask=False):
+    def __init__(self, userColorList, userInputList, maze_size_meters, tolerance=1000, mask=False, maskImg_MazeOnly=False, mzrun_ws_path=False):
 
         # Minimum Required
         self.dots = {}
@@ -30,7 +32,8 @@ class Dream3DPostProcess(object):
 
 
         # Additional Information
-        if mask: self.calcMazeMask(self.dots)
+        if mask:
+            path_image_cropped = self.calcMazeMask(self.dots, maskImg_MazeOnly, self.rotMatrix)
 
 
     def loadDots(self, userColorList, userFileList, tolerance=1000):
@@ -144,10 +147,11 @@ class Dream3DPostProcess(object):
 
         return scale
 
-    def calcMazeMask(self, dots):
+    def calcMazeMask(self, dots, maskImg_MazeOnly, rotMatrix):
         """
         Generate a mask of region confined by a quadrilateral constrained by the three dot centroids
         :param dots: Input Dictionary with three dot keys.
+        :param maskImg_MazeOnly: Absolute Path to 8-bit image (0-255) of the maze path
         :return: size in list [x,y,z]
         """
     
@@ -155,44 +159,78 @@ class Dream3DPostProcess(object):
         axis_y = np.subtract(dots['blue']['centroid'],   dots['green']['centroid'])
         
         # Find Mask Corners
-        corner_green1 = dots['green']['centroid']
-        corner_red    = dots['red']['centroid']
-        corner_blue   = dots['blue']['centroid']
-        corner_green2 = dots['blue']['centroid'] + axis_x
-        print(" > Four Corners Identified @ :", corner_green1, corner_red, corner_blue, corner_green2)
+        corner_NW = dots['green']['centroid']
+        corner_NE = dots['red']['centroid']
+        corner_SW = dots['blue']['centroid']
+        corner_SE = dots['blue']['centroid'] + axis_x   #potential issue spot for 3D in future
+        #print(" > Four Corners Identified @ :", corner_NW, corner_NE, corner_SW, corner_SE)
+
+
+        # Load Image as 8-bit, single channel
+        img = cv2.imread(maskImg_MazeOnly, 0)
+
+        # Build Mask
+        height = img.shape[0]
+        width = img.shape[1]
+
+        mask = np.zeros((height, width), dtype=np.uint8)
+        centroids = np.stack((corner_NW[:2], corner_NE[:2], corner_SE[:2], corner_SW[:2]), axis=0)
+        cv2.fillPoly(mask, [centroids], (255))
+
+        img_mask = cv2.bitwise_and(img,img,mask = mask)
+
+        # Export Masked Image
+        path, ext = os.path.splitext(maskImg_MazeOnly)
+        path_new = "{path}_{uid}{ext}".format(path=path, uid="mask", ext=ext)
+        #img_mask = cv2.cvtColor( img_mask, cv2.COLOR_RGB2GRAY)
+        cv2.imwrite(path_new, img_mask)
+
+
+
+        # Rotate Image
+        # Use Transpose to get rotation opposite direction
+        planar_rotMatrix = rotMatrix[:-1,:-1].T
+        planar_transform = np.column_stack((planar_rotMatrix, np.array([width, height/2]).T))
+
+        image_center = tuple(np.array(img_mask.shape[1::-1])/2)
+        img_rotated = cv2.warpAffine(img_mask, planar_transform, img_mask.shape[1::-1], flags=cv2.INTER_NEAREST)
+
+        # Export
+        path_new = "{path}_{uid}{ext}".format(path=path, uid="mask_rot", ext=ext)
+        cv2.imwrite(path_new, img_rotated)
+
+
+
+        # Crop Image
+        rect = cv2.boundingRect(np.argwhere(img_rotated == 255))
+        x,y,w,h = rect
+        img_crop = img_rotated[x:x+w, y:y+h].copy() #1 px buffer to ensure
+
+        path_crop_img = "{path}_{uid}{ext}".format(path=path, uid="mask_rot_crop", ext=ext)
+        cv2.imwrite(path_crop_img, img_crop)
+
+
+
+        # Debug by showing images
+        # cv2.imshow("Imported Image: Maze Path w/ Envr Clutter", img)
+        # cv2.imshow("Masked Maze Path", img_mask)
+        # cv2.imshow("Masked Image Rotated", img_rotated)
+        # cv2.imshow("Masked Image Cropped", img_crop)
+        # cv2.waitKey(0)
+
+
+        return path_crop_img
         
-        # Find Max Reach
-        max_x = max(corner_green1[0], corner_red[0], corner_blue[0], corner_green2[0])
-        max_y = max(corner_green1[1], corner_red[1], corner_blue[1], corner_green2[1])
-        max_z = max(corner_green1[2], corner_red[2], corner_blue[2], corner_green2[2])
-        print(" > Max Axial Reach @ x,y,z : ", max_x, max_y, max_z)
         
         # Setup Mask Array
         mask = np.zeros((max_x, max_y))
         print('Mask Shape', mask.shape)
         
-        print(axis_x)
-        print(axis_y)
         
         # Edge Lines (left & right)
-        if not axis_x[1]:
-            #todo: fix such that the last value is included in range.
-            edge_left_x = np.arange(corner_green1[0], corner_blue[0], 1)
-            edge_left_y = np.arange(corner_green1[1], corner_blue[1], 1)
-            edge_right_x = np.arange(corner_red[0], corner_green2[0], 1)
-            edge_right_y = np.arange(corner_red[1], corner_green2[1], 1)
             
-            print("Edge lines")
-            print(edge_left_x)
-            print(edge_left_y)
-            print(edge_right_x)
-            print(edge_right_y)
         
-        # Build Mask
-        #for row in
-        #todo: finish writing mask code
         
-        return "INCOMPLETE"
         
         
     
@@ -201,22 +239,27 @@ class Dream3DPostProcess(object):
 #### MAIN CODE ####
 
 def main():
+    print('\n--- Demo Code: "d3d_post_process.py" ---\n')
+
     # Demonstration Code:
     color_names = ["red", "green", "blue"]
-    centroid_filepaths = ['/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/feature_redDot.csv',
-                          '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/feature_greenDot.csv',
-                          '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/feature_blueDot.csv'
+    centroid_filepaths = ['/home/aims-ford/AA_research/ws_maze_follower/src/maze-runner/mzrun_ws/feature_redDot.csv',
+                          '/home/aims-ford/AA_research/ws_maze_follower/src/maze-runner/mzrun_ws/feature_greenDot.csv',
+                          '/home/aims-ford/AA_research/ws_maze_follower/src/maze-runner/mzrun_ws/feature_blueDot.csv'
                           ]
+    mask_MazeOnly = '/home/aims-ford/AA_research/ws_maze_follower/src/maze-runner/mzrun_ws/mask_MazeOnly.tiff'
+    mzrun_ws_path = '/home/aims-ford/AA_research/ws_maze_follower/src/maze-runner/mzrun_ws'
+
 
     # Realworld Measurement (in meters)
     maze_size = [0.18, 0.18]
 
-    d3d = Dream3DPostProcess(color_names, centroid_filepaths, maze_size)
+    d3d = Dream3DPostProcess(color_names, centroid_filepaths, maze_size, tolerance=10, mask=True, maskImg_MazeOnly=mask_MazeOnly, mzrun_ws_path=mzrun_ws_path)
 
-    print('')
-    print(d3d.dots)
-    print(d3d.rotMatrix)
-    print(d3d.mazeCentroid)
+    #print(d3d.dots)
+    #print(d3d.rotMatrix)
+    #print(d3d.mazeCentroid)
+    print('\n--- Demo Code: Complete ---\n')
 
 if __name__ == "__main__":
     main()
