@@ -35,6 +35,9 @@ class Dream3DPostProcess(object):
         if mask:
             path_image_cropped = self.calcMazeMask(self.dots, maskImg_MazeOnly, self.rotMatrix)
             filepath_maurer_path =  self.findMaurerPath(path_image_cropped, mzrun_ws_path)
+            self.path_solution_list, self.path_solution_image = self.callPathSolver(filepath_maurer_path, mzrun_ws_path)
+
+            print(self.path_solution_image)
 
 
     def loadDots(self, userColorList, userFileList, tolerance=1000):
@@ -226,9 +229,10 @@ class Dream3DPostProcess(object):
 
     def findMaurerPath(self, path_image_cropped, mzrun_ws_path):
         """
-        Generate a mask of region confined by a quadrilateral constrained by the three dot centroids
-        :param dots: Input Dictionary with three dot keys.
-        :return: size in list [x,y,z]
+        Call Dream3D Maurer Filter Pipeline. Post-process generate image.
+        :param path_image_cropped: Absolute file path to the cropped maze
+        :param mzrun_ws_path: Absolute path to maze-runner package working directory
+        :return: Saves new Image (maze_maurer_path.tiff)
         """
 
         import subprocess
@@ -299,8 +303,25 @@ class Dream3DPostProcess(object):
         return filepath_maurer_path
 
 
-        
-        
+    def callPathSolver(self, filepath_maurer_path, mzrun_ws_path):
+        """
+        Call Dream3D Maurer Filter Pipeline. Post-process generate image.
+        :param path_image_cropped: Absolute file path to the cropped maze
+        :param mzrun_ws_path: Absolute path to maze-runner package working directory
+        :return: Filename (less extension)  (maze_maurer_path.tiff)
+        """
+
+        #todo: using this as a wrapper. In future, covert solver to a python class and import
+
+        import subprocess
+
+        solver = os.path.dirname(mzrun_ws_path) + '/include/mazesolving/solve.py'
+        output_filename = str(mzrun_ws_path) + '/path_solved'
+
+        solver_output = open(mzrun_ws_path + '/temp_mauer_pipelineResult.txt', 'a')  # Workaround to supress output.
+        subprocess.call(["python", solver, filepath_maurer_path, output_filename], stdout=solver_output, stderr=solver_output)
+
+        return (str(output_filename) + '.csv', str(output_filename) + '.tiff')
         
     
 

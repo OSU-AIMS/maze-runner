@@ -73,14 +73,14 @@ def solve(factory, method, input_file, output_file):
             for y in range(min(a[0],b[0]), max(a[0],b[0]) + 1):
                 impixels[a[1],y] = px
 
-    im.save(output_file)
+    im.save(str(output_file) + '.tiff')
 
     """
     Output CSV of resultant path
     """
     print("\nSaving Solved Path as CSV (row,col)(top->bot)")
     print(resultpath)
-    with open('path_soln.csv', 'w') as csvfile:
+    with open(str(output_file) + '.csv', 'w') as csvfile:
         write = csv.writer(csvfile, delimiter=',')
         for i in resultpath:
             write.writerow(i)
