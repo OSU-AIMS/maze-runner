@@ -34,6 +34,7 @@ class Dream3DPostProcess(object):
         # Additional Information
         if mask:
             path_image_cropped = self.calcMazeMask(self.dots, maskImg_MazeOnly, self.rotMatrix)
+            filepath_maurer_path =  self.findMaurerPath(path_image_cropped, mzrun_ws_path)
 
 
     def loadDots(self, userColorList, userFileList, tolerance=1000):
@@ -221,15 +222,83 @@ class Dream3DPostProcess(object):
 
         return path_crop_img
         
-        
-        # Setup Mask Array
-        mask = np.zeros((max_x, max_y))
-        print('Mask Shape', mask.shape)
-        
-        
-        # Edge Lines (left & right)
-            
-        
+
+
+    def findMaurerPath(self, path_image_cropped, mzrun_ws_path):
+        """
+        Generate a mask of region confined by a quadrilateral constrained by the three dot centroids
+        :param dots: Input Dictionary with three dot keys.
+        :return: size in list [x,y,z]
+        """
+
+        import subprocess
+        import json
+
+        pipeline = os.path.dirname(mzrun_ws_path) +'/dream3d_pipelines/filter_maurer_path.json'
+        filepath_maurer_path = str(mzrun_ws_path) + '/maze_maurer_path.tiff' 
+
+        # Setup Dream3D / Simple Pipeline
+        with open(pipeline, 'r') as jsonFile:
+            data = json.load(jsonFile)
+
+            data["0"]["FileName"] = path_image_cropped
+            data["7"]["FileName"] = filepath_maurer_path
+
+        with open(pipeline, 'w') as jsonFile:
+            json.dump(data, jsonFile, indent=4)
+
+        # Run Dream3D Pipeline
+        d3d_output = open(mzrun_ws_path + '/temp_mauer_pipelineResult.txt', 'a')  # Workaround to supress output.
+        subprocess.call(["/opt/dream3d/bin/PipelineRunner", "-p", pipeline], stdout=d3d_output, stderr=d3d_output)
+
+
+        # Post Process Dream3D Generated Maurer Image
+        img = cv2.imread(filepath_maurer_path, 0)
+
+        # Find number of all-black rows on header
+        first_row = 0
+        whites = np.argwhere(img[first_row,:] == 255)
+        while len(whites) == 0:
+            first_row += 1
+            whites = np.argwhere(img[first_row,:] == 255)
+
+        # Force Single White pixel along top of maze
+        first = True
+        for i in whites:
+            if first: first_col = i
+            if not first:  img[0,i] = 0
+            first = False
+
+        # Draw WhiteLine straight up from the start pixel
+        while first_row > 0:
+            first_row -= 1
+            img[first_row, first_col] = 255
+
+
+
+        # Find first bottom row containing white pixels
+        last_row = img.shape[0] - 1
+        whites = np.argwhere(img[last_row,:] == 255)
+        while len(whites) == 0:
+            last_row -= 1
+            whites = np.argwhere(img[last_row,:] == 255)
+
+        # Draw WhiteLine straight down from all white pixels along bottom-most white pixel containing row
+        while last_row < img.shape[0]-1:
+            last_row += 1
+            for col in whites:
+                img[last_row, col] = 255
+
+
+
+        cv2.imwrite(filepath_maurer_path, img)
+        # cv2.imshow("Fixed Mauer Path Entrance", img)
+        # cv2.waitKey(0)
+    
+
+        return filepath_maurer_path
+
+
         
         
         
