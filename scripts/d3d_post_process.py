@@ -156,6 +156,7 @@ class Dream3DPostProcess(object):
 
         print('\n DEBUG: Found maze real/px scale = ')
         print(scale)
+        print('\n')
 
         return scale
 
@@ -341,12 +342,13 @@ def main():
 
     # Demonstration Code:
     color_names = ["red", "green", "blue"]
-    centroid_filepaths = ['/home/aims-ford/AA_research/ws_maze_follower/src/maze-runner/mzrun_ws/feature_redDot.csv',
-                          '/home/aims-ford/AA_research/ws_maze_follower/src/maze-runner/mzrun_ws/feature_greenDot.csv',
-                          '/home/aims-ford/AA_research/ws_maze_follower/src/maze-runner/mzrun_ws/feature_blueDot.csv'
+    mzrun_ws_path = '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws'
+    centroid_filepaths = ['/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/feature_redDot.csv',
+                          '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/feature_greenDot.csv',
+                          '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/feature_blueDot.csv'
                           ]
-    mask_MazeOnly = '/home/aims-ford/AA_research/ws_maze_follower/src/maze-runner/mzrun_ws/mask_MazeOnly.tiff'
-    mzrun_ws_path = '/home/aims-ford/AA_research/ws_maze_follower/src/maze-runner/mzrun_ws'
+    mask_MazeOnly = '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/mask_MazeOnly.tiff'
+    
 
 
     # Realworld Measurement (in meters)

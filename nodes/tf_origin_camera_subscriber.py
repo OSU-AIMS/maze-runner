@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
 import rospy
-import csv
+import numpy as np
 import sys
 from geometry_msgs.msg import TransformStamped
 
-def callback(data):
-    # Export Transform as a 7-element csv file saved in given workspace.
-    # Assumes data will be type "TransformStamped"
+
+def listener():
+    # Intialize New Node for Subscriber, Wait for Topic to Publish, Subscribe to Topic
+    rospy.init_node('tf_origin_to_camera_listener', anonymous=True)
+    data = rospy.wait_for_message('tf_origin_to_camera_transform', TransformStamped, timeout=None)
 
     data_list = [ 
         data.transform.translation.x,
@@ -20,21 +22,9 @@ def callback(data):
         ]
 
     outputFilePath = workspace + '/' + filename
-    with open(outputFilePath, 'w') as file:
-        write = csv.writer(file)
-        write.writerow(data_list)
+    np.save(outputFilePath, data_list)
 
     rospy.loginfo(">> Service Provided: Exported Origin-Camera Transform to %s", outputFilePath)
-    rospy.Subscriber.unregister()
-
-    
-def listener():
-    # Intialize New Node for Subscriber, Wait for Topic to Publish, Subscribe to Topic
-    rospy.init_node('tf_origin_to_camera_listener', anonymous=True)
-    rospy.wait_for_message('tf_origin_to_camera_transform', TransformStamped, timeout=None)
-    rospy.Subscriber("tf_origin_to_camera_transform", TransformStamped, callback)
-
-    #rospy.spin()
 
 
 if __name__ == '__main__':

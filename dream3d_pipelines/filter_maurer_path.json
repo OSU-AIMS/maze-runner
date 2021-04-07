@@ -5,13 +5,13 @@
         "Name": "filter_maurer_path"
     }, 
     "1": {
-        "SaveAsNewArray": 1, 
+        "BackgroundValue": 0, 
         "NewCellArrayName": "MaurerDist", 
         "SquaredDistance": 0, 
         "FilterVersion": "1.0.496", 
         "Filter_Human_Label": "ITK::Signed Maurer Distance Map Image Filter", 
         "UseImageSpacing": 1, 
-        "BackgroundValue": 0, 
+        "SaveAsNewArray": 1, 
         "InsideIsPositive": 1, 
         "SelectedCellArrayPath": {
             "Data Container Name": "ImageDataContainer", 
@@ -27,11 +27,11 @@
         "FilterVersion": "1.0.496", 
         "Filter_Human_Label": "ITK::Image Reader", 
         "ImageDataArrayName": "MazePath", 
-        "FileName": "/home/aims-ford/AA_research/ws_maze_follower/src/maze-runner/mzrun_ws/mask_MazeOnly_mask_rot_crop.tiff", 
+        "FileName": "/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/mask_MazeOnly_mask_rot_crop.tiff", 
         "Filter_Name": "ITKImageReader", 
         "Filter_Enabled": true, 
-        "Filter_Uuid": "{653b7b5c-03cb-5b32-8c3e-3637745e5ff6}", 
-        "CellAttributeMatrixName": "CellData"
+        "CellAttributeMatrixName": "CellData", 
+        "Filter_Uuid": "{653b7b5c-03cb-5b32-8c3e-3637745e5ff6}"
     }, 
     "3": {
         "NewCellArrayName": "ScaledMaurerDist", 
@@ -104,7 +104,7 @@
     "7": {
         "FilterVersion": "1.0.496", 
         "Filter_Human_Label": "ITK::Image Writer", 
-        "FileName": "/home/aims-ford/AA_research/ws_maze_follower/src/maze-runner/mzrun_ws/maze_maurer_path.tiff", 
+        "FileName": "/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/maze_maurer_path.tiff", 
         "Plane": 0, 
         "Filter_Name": "ITKImageWriter", 
         "ImageArrayPath": {
@@ -116,7 +116,7 @@
         "Filter_Uuid": "{11473711-f94d-5d96-b749-ec36a81ad338}"
     }, 
     "6": {
-        "ReplaceValue": 255, 
+        "Filter_Uuid": "{a37f2e24-7400-5005-b9a7-b2224570cbe9}", 
         "FilterVersion": "1.2.815", 
         "Filter_Human_Label": "Replace Value in Array", 
         "Filter_Name": "ReplaceValueInArray", 
@@ -127,7 +127,7 @@
             "Data Array Name": "MaurerMaskInt", 
             "Attribute Matrix Name": "CellData"
         }, 
-        "Filter_Uuid": "{a37f2e24-7400-5005-b9a7-b2224570cbe9}"
+        "ReplaceValue": 255
     }, 
     "8": {
         "WriteTimeSeries": 0, 

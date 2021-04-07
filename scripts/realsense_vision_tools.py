@@ -33,6 +33,9 @@ import matplotlib.pyplot as plt           # 2D plotting library producing public
 # Color Image processing
 import cv2
 
+# Maintenance
+import logging
+
 #####################################################
 #Countdown Timer Allowing for Slow Data Transfer/Collection of one Frame
 
@@ -202,6 +205,8 @@ class REALSENSE_VISION(object) :
     self.enableAdvancedMode()
     self.setupRSPipeline(set_color, set_depth)
 
+    self.intrinsics()
+
     print("<< Realsense Pipeline Setup \n")
 
 
@@ -251,12 +256,13 @@ class REALSENSE_VISION(object) :
       image.save(save_path_rgb)
 
       # Save Depth Array
-      np.save(str(name)+"_depth.npy", depth_image)
+      save_path_depth_npy = str(name) + "_depth.npy"
+      np.save(save_path_depth_npy, depth_image)
 
     finally:
       print("Image & Depth Array Saved as: " + str(name) )
 
-    return save_path_rgb
+    return save_path_rgb, save_path_depth_npy
 
   def capture_singleFrame_depth(self,name):
     """
@@ -275,19 +281,14 @@ class REALSENSE_VISION(object) :
       # Apply Colorizer (artificial coloring for depth field)
       colorized = self.colorizer.process(frames_filtered)
 
-      # Create save_to_ply object
-      ply = rs.save_to_ply( str(name) + ".ply" )
+      # Export to PLY
+      self.export_ply_colorized(colorized, name)
 
-      # Set options to the desired values
-      # In this example we'll generate a textual PLY with normals (mesh is already created by default)
-      ply.set_option(rs.save_to_ply.option_ply_binary, False)
-      ply.set_option(rs.save_to_ply.option_ply_normals, True)
-
-      # Apply the processing block to the frameset which contains the depth frame and the texture
-      ply.process(colorized)
+      # Export Depth Frame as NPY
+      self.export_npy(frames_filtered, name)
 
     finally:
-      print("PLY saved to " + str(name) + ".ply" )
+      logging.info(">> Completed: Capture_SingleFrame_Depth")
 
     return 1
 
@@ -338,6 +339,38 @@ class REALSENSE_VISION(object) :
 
     return frame_filtered
 
+
+  def export_ply_colorized(self, data, save_path):
+    # Create PLY Output Instance
+    ply = rs.save_to_ply( str(save_path) + ".ply" )
+
+    # Configure Output PLY
+    ply.set_option(rs.save_to_ply.option_ply_binary, False)
+    ply.set_option(rs.save_to_ply.option_ply_normals, True)
+
+    # Generate Colors for Depth ply
+    # Apply Colorizer (artificial coloring for depth field)
+    colorized = self.colorizer.process(data)
+
+    # Apply the processing block to the frameset which contains the depth frame and the texture
+    ply.process(colorized)
+
+    logging.info(">> PLY saved to " + str(save_path) + ".ply" )
+
+  def export_png(self, data, save_path):
+    from PIL import Image
+    image = Image.fromarray(data)
+    image.save(str(save_path) + ".png")
+    logging.info(">> PNG saved to " + str(save_path) + ".png" )
+
+  def export_npy(self, data, save_path):
+    with open(str(save_path) + ".npy", 'w') as f:
+      np.save(f, data)
+    logging.info(">> Numpy Array saved to " + str(save_path) + ".npy" )
+
+
+
+
   def get_depth_at_point(self, x, y):
     """
     Input X,Y PIXEL coordinates within current camera frame.
@@ -378,9 +411,26 @@ def main():
 
   # camera.intrinsics()
 
-  result1 = camera.capture_singleFrame_alignedRGBD("test1")
-  result2 = camera.capture_singleFrame_depth("test2")
-  result3 = camera.capture_singleFrame_color("test3")
+  #result2 = camera.capture_singleFrame_depth("test2")
+  #result3 = camera.capture_singleFrame_color("test3")
+
+
+  save_path_rgb, save_path_depth_npy = camera.capture_singleFrame_alignedRGBD("test1")
+
+  pixel_x = 480
+  pixel_y = 640
+
+  X = (pixel_x - camera_intrinsics.ppx)/camera_intrinsics.fx *depth
+  Y = (pixel_y - camera_intrinsics.ppy)/camera_intrinsics.fy *depth
+
+
+
+
+
+
+
+
+
 
   camera.stopRSpipeline()
 

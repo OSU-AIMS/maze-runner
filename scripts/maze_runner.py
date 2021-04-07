@@ -123,58 +123,63 @@ def retrieve_pose_from_dream3d(workspace_path, image_path, locator_scalar_tolera
 
 
 
-def characterize_maze(camera, workspace_path, img_id, maze_size, featureData_dots_filepaths):
+def characterize_maze(camera, workspace_path, img_id, maze_size, featureData_dots_filepaths, path_depth_npy):
 
 
     # Post Process Features to find Rotation, mazeCentroid, mazeScale
     color_names = ["red", "green", "blue"]
-    d3d = Dream3DPostProcess(color_names, featureData_dots_filepaths, maze_size, tolerance=80)
+    mask_MazeOnly = str(workspace_path) + '/mask_MazeOnly.tiff' #todo: hardcoded
+    d3d = Dream3DPostProcess(color_names, featureData_dots_filepaths, maze_size, tolerance=80, mask=True, maskImg_MazeOnly=mask_MazeOnly, mzrun_ws_path=workspace_path)
 
     rotationMatrix = d3d.rotMatrix
     mazeCentroid = d3d.mazeCentroid
     mazeScale = d3d.scale
 
+    mazeSolutionList = d3d.path_solution_list
+
+    dots = d3d.dots.copy()
+
 
     # Apply Depth Information
     depth_array = np.load(str(workspace_path) + '/' + str(img_id) + '_depth.npy')
-    
+    #depth_array = np.load(path_depth_npy)
+
+    # For Visuals & Debugging
+    import cv2
+    cv2.imwrite(str(workspace_path)+"/depth_data.tiff", depth_array)
+
+
     for color in color_names:
 
-        # Raw Value Pulled from Depth. Not corrected for length
-        # new_depth = depth_array[d3d.dots[color]['centroid'][0], d3d.dots[color]['centroid'][1]]
-        # print('Depth @ Point', color)
-        # print(new_depth)
+        pixel_coord = [dots[color]['centroid'][0], dots[color]['centroid'][1]]
 
-        # Corrected Depth Value provided by iRS API.
-        # todo: find cleaner approach to use this, or use intrincis to fix above calculation.
-        pixel_coord = [d3d.dots[color]['centroid'][0], d3d.dots[color]['centroid'][1]]
+        # Raw Value Pulled from Depth.
+        # todo: Not corrected for length, do this in future!
+        # todo: calculate average depth value about local region
+        depth = depth_array[dots[color]['centroid'][1], dots[color]['centroid'][0]].astype(float) / 1000
 
-        correctedDepth = camera.get_depth_at_point(pixel_coord[0], pixel_coord[1])
-        print('RS Depth @ Point', color)
-        print(correctedDepth)
+        # Transform Dots into World Coordinates (meters)
+        x = (pixel_coord[0] - camera.intrin_color.ppx)/camera.intrin_color.fx *depth
+        y = (pixel_coord[1] - camera.intrin_color.ppy)/camera.intrin_color.fy *depth
+        z = depth
 
-        d3d.dots[color]['centroid'][2] = correctedDepth
-        print(d3d.dots[color]['centroid'])
+        dots[color]['centroid_camera_frame'] = [0,0,0] #temporary filler
+        dots[color]['centroid_camera_frame'][0] = x
+        dots[color]['centroid_camera_frame'][1] = y
+        dots[color]['centroid_camera_frame'][2] = z
 
-        # Transform Dots into World Coordinates
-        x, y, z = camera.get_3d_coordinate_at_point(pixel_coord, correctedDepth)
-        d3d.dots[color]['centroid_camera_frame'] = [0,0,0] #temporary filler
-        d3d.dots[color]['centroid_camera_frame'][0] = x
-        d3d.dots[color]['centroid_camera_frame'][1] = y
-        d3d.dots[color]['centroid_camera_frame'][2] = z 
-
-        print("START DEBUGGING HERE NEXT")
-        print("REAL DOT COORDINATES", color)
-        print(x,y,z)
-        print('')
+        # print("----------------------------")
+        # print("REAL DOT COORDINATES", color)
+        # print(x,y,z)
+        # print('')
 
 
-    mazeOrigin = d3d.dots['green']['centroid']
+    mazeOrigin = dots['green']['centroid_camera_frame']
     print(mazeOrigin)
 
 
     print(">> Characterize Maze, Complete.")
-    return mazeCentroid, rotationMatrix, mazeScale, mazeOrigin
+    return mazeCentroid, rotationMatrix, mazeScale, mazeOrigin, mazeSolutionList
 
 
 class DataSaver(object):
@@ -198,24 +203,38 @@ class DataSaver(object):
         setup_dict['maze_centroid'] = []
         setup_dict['scale'] = []
         setup_dict['maze_origin'] = []
+        setup_dict['maze_soln_filepath'] = []
+        setup_dict['tf_camera2world'] = []
 
         self.all_data = setup_dict
 
+
     def capture(self, img_counter, find_maze=False):
-        #img_path = self.camera.capture_singleFrame_color(self.workspace + '/' + str(img_counter))
-        img_path = self.camera.capture_singleFrame_alignedRGBD(self.workspace + '/' + str(img_counter))
+        #path_img = self.camera.capture_singleFrame_color(self.workspace + '/' + str(img_counter))
+        path_img, path_depth_npy = self.camera.capture_singleFrame_alignedRGBD(self.workspace + '/' + str(img_counter))
         pose = self.robot.lookup_pose()
+
+        # Calculate Camera Transformation
+        import subprocess
+        tf_filename = "tf_camera2world.npy"
+        tf_listener = os.path.dirname(self.workspace) +'/nodes/tf_origin_camera_subscriber.py'
+        subprocess.call([tf_listener, self.workspace, tf_filename])
+
+        tf_list = np.load(str(self.workspace) + '/' + tf_filename)
+        tf_camera2world = quant_pose_to_tf_matrix(tf_list)
+
 
         if find_maze: 
             # Run Vision Pipeline, find Location & Rotation of Maze
-            featureData_dots_filepaths = retrieve_pose_from_dream3d(self.workspace, img_path, 1000)
-            centroid, rotationMatrix, scale, mazeOrigin  = characterize_maze(self.camera, self.workspace, img_id=img_counter, maze_size=self.maze_size, featureData_dots_filepaths=featureData_dots_filepaths)
+            featureData_dots_filepaths = retrieve_pose_from_dream3d(self.workspace, path_img, 1000)
+            centroid, rotationMatrix, scale, mazeOrigin, mazeSolutionList  = characterize_maze(self.camera, self.workspace, img_id=img_counter, maze_size=self.maze_size, featureData_dots_filepaths=featureData_dots_filepaths, path_depth_npy=path_depth_npy)
 
-            self.save_data(self.workspace, img_counter, img_path, pose, centroid, rotationMatrix, scale, mazeOrigin)
+            self.save_data(self.workspace, img_counter, path_img, pose, centroid, rotationMatrix, scale, mazeOrigin, mazeSolutionList, tf_camera2world)
         else:
-            self.save_data(self.workspace, img_counter, img_path, pose, np.array([0]), np.array([0]), 0, np.array([0]))
+            self.save_data(self.workspace, img_counter, path_img, pose, np.array([0]), np.array([0]), 0, np.array([0]), 'N/A', tf_camera2world)
 
-    def save_data(self, mzrun_ws, img_counter, img_path, pose, maze_centroid, maze_rotationMatrix, scale, mazeOrigin) :
+
+    def save_data(self, mzrun_ws, img_counter, path_img, pose, maze_centroid, maze_rotationMatrix, scale, mazeOrigin, mazeSolutionList, tf_camera2world) :
         """
         Take Photo AND Record Current Robot Position
         :param robot:     Robot Instance
@@ -228,12 +247,14 @@ class DataSaver(object):
         add_data = self.all_data
 
         add_data['counter'].append(img_counter)
-        add_data['images'].append(img_path)
+        add_data['images'].append(path_img)
         add_data['poses'].append(json_message_converter.convert_ros_message_to_json(pose))
         add_data['maze_centroid'].append(np.ndarray.tolist(maze_centroid))
         add_data['maze_rotationMatrix'].append(np.ndarray.tolist(maze_rotationMatrix))
         add_data['scale'].append(scale)
-        add_data['maze_origin'].append(np.ndarray.tolist(mazeOrigin))
+        add_data['maze_origin'].append(mazeOrigin)
+        add_data['maze_soln_filepath'].append(str(mazeSolutionList))
+        add_data['tf_camera2world'].append(np.ndarray.tolist(tf_camera2world))
 
         with open(mzrun_ws + '/camera_poses.json', 'w') as outfile:
             json.dump(add_data, outfile, indent=4)
@@ -251,10 +272,60 @@ class DataSaver(object):
             'maze_rotationMatrix' : self.all_data['maze_rotationMatrix'][-1],
             'scale' : self.all_data['scale'][-1],
             'maze_origin' : self.all_data['maze_origin'][-1],
+            'maze_soln_filepath' : self.all_data['maze_soln_filepath'][-1],
+            'tf_camera2world' : self.all_data['tf_camera2world'][-1], 
         }
 
         return latest_data
 
+
+def quant_pose_to_tf_matrix(quant_pose):
+    """
+    Covert a quaternion into a full three-dimensional rotation matrix.
+ 
+    Input
+    :param Q: A 4 element array representing the quaternion (q0,q1,q2,q3) 
+ 
+    Output
+    :return: A 3x3 element matrix representing the full 3D rotation matrix. 
+             This rotation matrix converts a point in the local reference 
+             frame to a point in the global reference frame.
+    """
+
+    # Extract Translation
+    r03 = quant_pose[0]
+    r13 = quant_pose[1]
+    r23 = quant_pose[2]
+
+
+    # Extract the values from Q
+    q0 = quant_pose[3]
+    q1 = quant_pose[4]
+    q2 = quant_pose[5]
+    q3 = quant_pose[6]
+     
+    # First row of the rotation matrix
+    r00 = 2 * (q0 * q0 + q1 * q1) - 1
+    r01 = 2 * (q1 * q2 - q0 * q3)
+    r02 = 2 * (q1 * q3 + q0 * q2)
+     
+    # Second row of the rotation matrix
+    r10 = 2 * (q1 * q2 + q0 * q3)
+    r11 = 2 * (q0 * q0 + q2 * q2) - 1
+    r12 = 2 * (q2 * q3 - q0 * q1)
+     
+    # Third row of the rotation matrix
+    r20 = 2 * (q1 * q3 - q0 * q2)
+    r21 = 2 * (q2 * q3 + q0 * q1)
+    r22 = 2 * (q0 * q0 + q3 * q3) - 1
+     
+    # 3x3 rotation matrix
+    tf_matrix = np.array([ [r00, r01, r02, r03],
+                           [r10, r11, r12, r13],
+                           [r20, r21, r22, r23],
+                           [  0,   0,   0,  1 ]])
+                            
+    return tf_matrix
 
 
 #####################################################
@@ -312,8 +383,9 @@ def main():
         ############################
         # Move to Known Start Position: All-Zeros
         if motion_testing:
-            raw_input('>> Go to Maze Overlook Crouch Position <enter>')
-            robot_camera.goto_named_target("maze_overlook_crouch")
+            # raw_input('>> Go to Maze Overlook Crouch Position <enter>')
+            # robot_camera.goto_named_target("maze_overlook_crouch")
+            print()
 
         # Testing: Increment Robot Down from overloop position
         if unknown_maze_locn:
@@ -322,8 +394,8 @@ def main():
             start_pose = robot_camera.lookup_pose()
             start_pose.position.z -= 0.7
 
-            raw_input('>> Go to Low Crouch Position <enter>')
-            robot_camera.goto_Quant_Orient(start_pose)
+            # raw_input('>> Go to Low Crouch Position <enter>')
+            # robot_camera.goto_Quant_Orient(start_pose)
 
             # Record First Camera Set
             raw_input('>> Start Finding Maze Path? <enter>')
@@ -399,8 +471,9 @@ def main():
 
         # Move to Known Start Position: All-Zeros
         if motion_testing:
-            raw_input('Go to Maze Overlook Crouch Position <enter>')
-            robot_camera.goto_named_target("maze_overlook_crouch")
+            # raw_input('Go to Maze Overlook Crouch Position <enter>')
+            # robot_camera.goto_named_target("maze_overlook_crouch")
+            print()
 
 
     except rospy.ROSInterruptException:
