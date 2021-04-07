@@ -109,7 +109,7 @@ def retrieve_pose_from_dream3d(workspace_path, image_path, locator_scalar_tolera
     data["34"]["FileName"] = workspace_path + '/mask_mostlyBlue.tiff'
 
     with open(pipeline, 'w') as jsonFile:
-        json.dump(data, jsonFile)
+        json.dump(data, jsonFile, indent=4, sort_keys=True)
 
     # Workaround to supress output.
     d3d_output = open(workspace_path + '/temp_pipelineResult.txt', 'a')
@@ -276,12 +276,12 @@ def main():
     ############################
     #Debug Settings
     motion_testing = True
-    camera_testing = True
+    unknown_maze_locn = True
     path_testing   = False
 
     try:
 
-        # Setup Robot
+        # Setup Robot Planning Groups
         robot_camera = moveManipulator(eef='r2_eef_camera')
         robot_camera.set_accel(0.15)
         robot_camera.set_vel(0.20)
@@ -291,8 +291,7 @@ def main():
 
 
         # Setup Camera
-        if camera_testing:
-            camera = REALSENSE_VISION(set_color=[640,480,30], set_depth=[640,480,30], max_distance=5.0) # Higher Resolution made difficult... (set_color=[1280,720,6], set_depth=[1280,720,6])
+        camera = REALSENSE_VISION(set_color=[640,480,30], set_depth=[640,480,30], max_distance=5.0) # Intentionally setting this specific resolution so pixel counts can be controlled easier
         
         # Setup Working Directory
         mzrun_pkg = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -306,50 +305,39 @@ def main():
         os.chmod(mzrun_ws, 0777)
 
         # Setup Image Record JSON
-        if camera_testing:
-            database = DataSaver(mzrun_ws, robot_camera, camera)
+        database = DataSaver(mzrun_ws, robot_camera, camera)
         img = 0
 
 
         ############################
         # Move to Known Start Position: All-Zeros
         if motion_testing:
-            raw_input('Go to Maze Overlook Crouch Position <enter>')
+            raw_input('>> Go to Maze Overlook Crouch Position <enter>')
             robot_camera.goto_named_target("maze_overlook_crouch")
 
         # Testing: Increment Robot Down from overloop position
-        if camera_testing:
+        if unknown_maze_locn:
 
             # Move to Start Position
             start_pose = robot_camera.lookup_pose()
             start_pose.position.z -= 0.7
-            if motion_testing:
-            raw_input('Go to Maze Overlook Crouch Position <enter>')
+
+            raw_input('>> Go to Low Crouch Position <enter>')
             robot_camera.goto_Quant_Orient(start_pose)
 
             # Record First Camera Set
+            raw_input('>> Start Finding Maze Path? <enter>')
             timer_wait() #ensure camera has had time to buffer initial frames
-            database.capture(img, find_maze=False)
 
-            for img in range(1,2):
+            database.capture(img, find_maze=True)   
+            latest_data = database.last_recorded()
 
-                # Move Robot
-                if motion_testing:
-                    raw_input('incr <enter>')
-                    tmp_pose = robot_camera.lookup_pose()
-                    tmp_pose.position.z -= 0.3
-                    robot_camera.goto_Quant_Orient(tmp_pose)
-
-                # Capture Data
-                database.capture(img, find_maze=True)   
-                latest_data = database.last_recorded()
-
-                last_mazeOrigin = latest_data['maze_origin']
-                last_scale      = latest_data['scale']
-                
-                print('\nDebug')
-                print('last_origin',last_mazeOrigin)
-                print('last_scale',last_scale)
+            last_mazeOrigin = latest_data['maze_origin']
+            last_scale      = latest_data['scale']
+            
+            print('\nDebug')
+            print('last_origin',last_mazeOrigin)
+            print('last_scale',last_scale)
 
 
         # Path Following Demo:
