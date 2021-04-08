@@ -183,8 +183,15 @@ def characterize_maze(camera, workspace_path, img_id, maze_size, featureData_dot
     print(' --- if issues, debug here first. Not confident correctly setup. Check translation values')
     print(body_frame)
 
+    # Create list of lists.. [[x,y,z], [..], [..]] 
+    dots_list = []
+    dots_list.append(dots['red']['centroid_camera_frame'])
+    dots_list.append(dots['green']['centroid_camera_frame'])
+    dots_list.append(dots['blue']['centroid_camera_frame'])
+    print(dots_list)
+
     print(">> Characterize Maze, Complete.")
-    return mazeCentroid, rotationMatrix, mazeScale, mazeOrigin, mazeSolutionList, body_frame
+    return mazeCentroid, rotationMatrix, mazeScale, mazeOrigin, mazeSolutionList, body_frame, dots_list
 
 
 class DataSaver(object):
@@ -211,6 +218,7 @@ class DataSaver(object):
         setup_dict['maze_soln_filepath'] = []
         setup_dict['tf_camera2world'] = []
         setup_dict['tf_body2camera'] = []
+        setup_dict['dots'] = []
 
         self.all_data = setup_dict
 
@@ -233,14 +241,14 @@ class DataSaver(object):
         if find_maze: 
             # Run Vision Pipeline, find Location & Rotation of Maze
             featureData_dots_filepaths = retrieve_pose_from_dream3d(self.workspace, path_img, 1000)
-            centroid, rotationMatrix, scale, mazeOrigin, mazeSolutionList, tf_body2camera  = characterize_maze(self.camera, self.workspace, img_id=img_counter, maze_size=self.maze_size, featureData_dots_filepaths=featureData_dots_filepaths, path_depth_npy=path_depth_npy)
+            centroid, rotationMatrix, scale, mazeOrigin, mazeSolutionList, tf_body2camera, dots  = characterize_maze(self.camera, self.workspace, img_id=img_counter, maze_size=self.maze_size, featureData_dots_filepaths=featureData_dots_filepaths, path_depth_npy=path_depth_npy)
 
-            self.save_data(self.workspace, img_counter, path_img, pose, centroid, rotationMatrix, scale, mazeOrigin, mazeSolutionList, tf_camera2world, tf_body2camera)
+            self.save_data(self.workspace, img_counter, path_img, pose, centroid, rotationMatrix, scale, mazeOrigin, mazeSolutionList, tf_camera2world, tf_body2camera, dots)
         else:
-            self.save_data(self.workspace, img_counter, path_img, pose, np.array([0]), np.array([0]), 0, np.array([0]), 'N/A', tf_camera2world, np.array([0]))
+            self.save_data(self.workspace, img_counter, path_img, pose, np.array([0]), np.array([0]), 0, np.array([0]), 'N/A', tf_camera2world, np.array([0]), np.array([0]))
 
 
-    def save_data(self, mzrun_ws, img_counter, path_img, pose, maze_centroid, maze_rotationMatrix, scale, mazeOrigin, mazeSolutionList, tf_camera2world, tf_body2camera) :
+    def save_data(self, mzrun_ws, img_counter, path_img, pose, maze_centroid, maze_rotationMatrix, scale, mazeOrigin, mazeSolutionList, tf_camera2world, tf_body2camera, dots) :
         """
         Take Photo AND Record Current Robot Position
         :param robot:     Robot Instance
@@ -262,6 +270,7 @@ class DataSaver(object):
         add_data['maze_soln_filepath'].append(str(mazeSolutionList))
         add_data['tf_camera2world'].append(np.ndarray.tolist(tf_camera2world))
         add_data['tf_body2camera'].append(np.ndarray.tolist(tf_body2camera))
+        add_data['dots'].append(dots)
 
         with open(mzrun_ws + '/camera_poses.json', 'w') as outfile:
             json.dump(add_data, outfile, indent=4)
@@ -282,6 +291,7 @@ class DataSaver(object):
             'maze_soln_filepath' : self.all_data['maze_soln_filepath'][-1],
             'tf_camera2world' : self.all_data['tf_camera2world'][-1], 
             'tf_body2camera' : self.all_data['tf_body2camera'][-1],
+            'dots' : self.all_data['dots'][-1],
         }
 
         return latest_data
