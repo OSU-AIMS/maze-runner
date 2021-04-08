@@ -364,9 +364,11 @@ def main():
 
     ############################
     #Debug Settings
-    motion_testing = True
-    unknown_maze_locn = True
-    path_testing   = False
+    motion_testing      = True
+    unknown_maze_locn   = True
+    path_testing        = True
+
+    fixed_path          = False #demo for a presolved maze path placed on the stool
 
     try:
 
@@ -380,6 +382,7 @@ def main():
 
         # Transformations Tool Class
         tf_tool = transformations()
+
 
         # Setup Camera
         camera = REALSENSE_VISION(set_color=[640,480,30], set_depth=[640,480,30], max_distance=5.0) # Intentionally setting this specific resolution so pixel counts can be controlled easier
@@ -403,19 +406,18 @@ def main():
         ############################
         # Move to Known Start Position: All-Zeros
         if motion_testing:
-            # raw_input('>> Go to Maze Overlook Crouch Position <enter>')
-            # robot_camera.goto_named_target("maze_overlook_crouch")
+            raw_input('>> Go to Maze Overlook Crouch Position <enter>')
+            robot_camera.goto_named_target("maze_overlook_crouch")
             print()
 
         # Testing: Increment Robot Down from overloop position
         if unknown_maze_locn:
 
             # Move to Start Position
+            raw_input('>> Go to Low Crouch Position <enter>')
             start_pose = robot_camera.lookup_pose()
             start_pose.position.z -= 0.7
-
-            # raw_input('>> Go to Low Crouch Position <enter>')
-            # robot_camera.goto_Quant_Orient(start_pose)
+            robot_camera.goto_Quant_Orient(start_pose)
 
             # Record First Camera Set
             raw_input('>> Start Finding Maze Path? <enter>')
@@ -424,18 +426,18 @@ def main():
             database.capture(img, find_maze=True)   
             latest_data = database.last_recorded()
 
-            last_mazeOrigin = latest_data['maze_origin']
-            last_scale      = latest_data['scale']
+            last_mazeOrigin       = latest_data['maze_origin']
+            last_scale            = latest_data['scale']
             last_tf_camera2world  = np.array(latest_data['tf_camera2world'])
-            last_tf_body2camera = np.array(latest_data['tf_body2camera'])
+            last_tf_body2camera   = np.array(latest_data['tf_body2camera'])
 
             print('\n<< Last Maze Information')
             print('last_origin',last_mazeOrigin)
             print('last_scale',last_scale)
 
             print('last_tf_camera2world (fixed)')
-            rot_camera_hardcode = np.array([[0,-1,0],[-1,0,0],[0,0,-1]])
-            translate = last_tf_camera2world[:-1,-1].tolist()
+            rot_camera_hardcode  = np.array([[0,-1,0],[-1,0,0],[0,0,-1]])
+            translate            = last_tf_camera2world[:-1,-1].tolist()
             last_tf_camera2world = tf_tool.generateTransMatrix(rot_camera_hardcode, translate)
             print(np.around(last_tf_camera2world,2))
 
@@ -448,8 +450,105 @@ def main():
 
 
 
+
+        if path_testing and unknown_maze_locn and False:
+            print("\n<< Show Locator Dots")
+            latest_data = database.last_recorded
+            dots = latest_data['dots']
+
+            # Transform
+            dots_as_tf_matrices = prepare_path_tf_ready(dots_list)
+
+            # Find & Apply Rigid Body Transform to Maze 
+            # pull from corrected tf in last section
+            print('<< Using Maze Origin Frame @ ', tf_maze2world)
+
+            # Rotate Path (as Rigid Body) according to body_frame
+            dots_via_fixed_frame = tf_tool.convertPath2FixedFrame(dots_as_tf_matrices, tf_maze2world)
+
+            # Convert Path of Transforms to Robot Poses
+            dots_as_path_poses = tf_tool.convertPath2RobotPose(dots_via_fixed_frame)
+            orientation = [0.97, 0.242, 0.014, 0.012]
+
+            raw_input('>> Begin Showing Maze Dots <enter>')
+            for node in dots_as_path_poses:
+                try:
+                    # Overwrite Requested Orientation with that of Maze Starting Orientation
+                    node[-4:] = orientation
+
+                    # Liftoff Surface for testing purposes
+                    node[2] += 0.1
+
+                    print('Moved to Dot @')
+                    print(node)
+
+                    robot_pointer.goto_Quant_Orient(node)
+
+                    raw_input('>> Next Dot <enter>')
+
+                except KeyboardInterrupt:
+                    break
+                    return
+
+
+
+
+
+
+        if path_testing and unknown_maze_locn and True:
+            print("\n<< Begin Path Testing")
+
+            #  Load Maze Path & Scale
+            latest_data = database.last_recorded()
+            solved_maze_path = latest_data['maze_soln_filepath']
+            last_scale = latest_data['scale']
+
+            # XY Process Path into Transformation List
+            path_as_xyz = prepare_path_transforms_list(solved_maze_path, scaling_factor=last_scale)
+            path_as_tf_matrices = prepare_path_tf_ready(path_as_xyz)
+
+            # Find & Apply Rigid Body Transform to Maze 
+            # pull from corrected tf in last section
+            print('<< Using Maze Origin Frame @ ', tf_maze2world)
+
+            # Rotate Path (as Rigid Body) according to body_frame
+            path_via_fixed_frame = tf_tool.convertPath2FixedFrame(path_as_tf_matrices, tf_maze2world)
+
+            # Convert Path of Transforms to Robot Poses
+            new_path_poses = tf_tool.convertPath2RobotPose(path_via_fixed_frame)
+            orientation = [0.97, 0.242, 0.014, 0.012]
+            index =0
+
+            raw_input('>> Begin Solving maze <enter>')
+            for node in new_path_poses:
+                try:
+                    # Overwrite Requested Orientation with that of Maze Starting Orientation
+                    node[-4:] = orientation
+                    # Liftoff Surface for testing purposes
+                    node[2] += 0.04
+
+                    print('Moved to Pose:')
+                    print(node)
+
+                    robot_pointer.goto_Quant_Orient(node)
+
+                    if index == 0:
+                        raw_input("wait")
+                        index +=1
+                    #raw_input('>> Next Pose <enter>')
+
+                except KeyboardInterrupt:
+                    break
+                    return
+
+
+
+
+
+
+
         # Path Following Demo:
-        if path_testing:
+        if fixed_path:
 
             #maze_closelook_stool = [2.09, -2.4563, 1.037, 0.707, -0.707, 0, 0]
             #robot_camera.goto_Quant_Orient(maze_closelook_stool)
@@ -469,7 +568,6 @@ def main():
             path_as_tf_matrices = prepare_path_tf_ready(path_as_xyz)
 
             # Find & Apply Rigid Body Transform to Maze 
-
             body_rot = np.matrix('1 0 0; 0 1 0; 0 0 1')   # rot(z,90deg)    ##TODO: get from DREAM3D pipeline  body_rot=retrieve_pose_from_dream3d(_)
             body_transl = np.matrix('1.96846; -2.55415; 0.6200')
             body_frame = tf_tool.generateTransMatrix(body_rot, body_transl)
