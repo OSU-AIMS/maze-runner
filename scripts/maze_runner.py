@@ -214,7 +214,7 @@ class DataSaver(object):
         path_img, path_depth_npy = self.camera.capture_singleFrame_alignedRGBD(self.workspace + '/' + str(img_counter))
         pose = self.robot.lookup_pose()
 
-        # Calculate Camera Transformation
+        # Calculate Camera Transformation (relative to world frame)
         import subprocess
         tf_filename = "tf_camera2world.npy"
         tf_listener = os.path.dirname(self.workspace) +'/nodes/tf_origin_camera_subscriber.py'
@@ -406,10 +406,14 @@ def main():
 
             last_mazeOrigin = latest_data['maze_origin']
             last_scale      = latest_data['scale']
-            
+            last_tf_camera  = np.array(latest_data['tf_camera2world'])
+
             print('\nDebug')
             print('last_origin',last_mazeOrigin)
             print('last_scale',last_scale)
+            print('last_tf_camera')
+            print(last_tf_camera)
+
 
 
         # Path Following Demo:
@@ -478,12 +482,12 @@ def main():
 
     except rospy.ROSInterruptException:
         # Close Vision Pipeline
-        #camera.stopRSpipeline()
+        camera.stopRSpipeline()
         return
 
     except KeyboardInterrupt:
         # Close Vision Pipeline
-        #camera.stopRSpipeline()
+        camera.stopRSpipeline()
         return
 
 

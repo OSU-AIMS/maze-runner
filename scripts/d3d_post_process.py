@@ -220,7 +220,7 @@ class Dream3DPostProcess(object):
         img_crop = img_rotated[x:x+w, y:y+h].copy() #1 px buffer to ensure
 
         path_crop_img = "{path}_{uid}{ext}".format(path=path, uid="mask_rot_crop", ext=ext)
-        cv2.imwrite(path_crop_img, img_crop)
+        #cv2.imwrite(path_crop_img, img_crop)   #todo: known to cause error 'floating point exception'
 
 
 
