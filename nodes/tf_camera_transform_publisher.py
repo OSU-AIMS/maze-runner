@@ -26,7 +26,7 @@ if __name__ == '__main__':
 
     while not rospy.is_shutdown():
         try:
-            msg_new = tfBuffer.lookup_transform('origin', 'camera_link', rospy.Time(0))
+            msg_new = tfBuffer.lookup_transform('origin', 'r2_tool_camera', rospy.Time(0))
 
         
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):

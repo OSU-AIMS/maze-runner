@@ -173,13 +173,18 @@ def characterize_maze(camera, workspace_path, img_id, maze_size, featureData_dot
         # print(x,y,z)
         # print('')
 
-
+    ## Maze Body Frame (origin @ NW dot)(green dot)
+    from transformations import transformations
+    tf_tool = transformations()
     mazeOrigin = dots['green']['centroid_camera_frame']
-    print(mazeOrigin)
+    body_frame = tf_tool.generateTransMatrix(rotationMatrix, mazeOrigin)
 
+    print('\nBody Frame')
+    print(' --- if issues, debug here first. Not confident correctly setup. Check translation values')
+    print(body_frame)
 
     print(">> Characterize Maze, Complete.")
-    return mazeCentroid, rotationMatrix, mazeScale, mazeOrigin, mazeSolutionList
+    return mazeCentroid, rotationMatrix, mazeScale, mazeOrigin, mazeSolutionList, body_frame
 
 
 class DataSaver(object):
@@ -205,6 +210,7 @@ class DataSaver(object):
         setup_dict['maze_origin'] = []
         setup_dict['maze_soln_filepath'] = []
         setup_dict['tf_camera2world'] = []
+        setup_dict['tf_body2camera'] = []
 
         self.all_data = setup_dict
 
@@ -227,14 +233,14 @@ class DataSaver(object):
         if find_maze: 
             # Run Vision Pipeline, find Location & Rotation of Maze
             featureData_dots_filepaths = retrieve_pose_from_dream3d(self.workspace, path_img, 1000)
-            centroid, rotationMatrix, scale, mazeOrigin, mazeSolutionList  = characterize_maze(self.camera, self.workspace, img_id=img_counter, maze_size=self.maze_size, featureData_dots_filepaths=featureData_dots_filepaths, path_depth_npy=path_depth_npy)
+            centroid, rotationMatrix, scale, mazeOrigin, mazeSolutionList, tf_body2camera  = characterize_maze(self.camera, self.workspace, img_id=img_counter, maze_size=self.maze_size, featureData_dots_filepaths=featureData_dots_filepaths, path_depth_npy=path_depth_npy)
 
-            self.save_data(self.workspace, img_counter, path_img, pose, centroid, rotationMatrix, scale, mazeOrigin, mazeSolutionList, tf_camera2world)
+            self.save_data(self.workspace, img_counter, path_img, pose, centroid, rotationMatrix, scale, mazeOrigin, mazeSolutionList, tf_camera2world, tf_body2camera)
         else:
-            self.save_data(self.workspace, img_counter, path_img, pose, np.array([0]), np.array([0]), 0, np.array([0]), 'N/A', tf_camera2world)
+            self.save_data(self.workspace, img_counter, path_img, pose, np.array([0]), np.array([0]), 0, np.array([0]), 'N/A', tf_camera2world, np.array([0]))
 
 
-    def save_data(self, mzrun_ws, img_counter, path_img, pose, maze_centroid, maze_rotationMatrix, scale, mazeOrigin, mazeSolutionList, tf_camera2world) :
+    def save_data(self, mzrun_ws, img_counter, path_img, pose, maze_centroid, maze_rotationMatrix, scale, mazeOrigin, mazeSolutionList, tf_camera2world, tf_body2camera) :
         """
         Take Photo AND Record Current Robot Position
         :param robot:     Robot Instance
@@ -255,6 +261,7 @@ class DataSaver(object):
         add_data['maze_origin'].append(mazeOrigin)
         add_data['maze_soln_filepath'].append(str(mazeSolutionList))
         add_data['tf_camera2world'].append(np.ndarray.tolist(tf_camera2world))
+        add_data['tf_body2camera'].append(np.ndarray.tolist(tf_body2camera))
 
         with open(mzrun_ws + '/camera_poses.json', 'w') as outfile:
             json.dump(add_data, outfile, indent=4)
@@ -274,6 +281,7 @@ class DataSaver(object):
             'maze_origin' : self.all_data['maze_origin'][-1],
             'maze_soln_filepath' : self.all_data['maze_soln_filepath'][-1],
             'tf_camera2world' : self.all_data['tf_camera2world'][-1], 
+            'tf_body2camera' : self.all_data['tf_body2camera'][-1],
         }
 
         return latest_data
@@ -360,6 +368,8 @@ def main():
         robot_pointer.set_accel(0.05)
         robot_pointer.set_vel(0.05)
 
+        # Transformations Tool Class
+        tf_tool = transformations()
 
         # Setup Camera
         camera = REALSENSE_VISION(set_color=[640,480,30], set_depth=[640,480,30], max_distance=5.0) # Intentionally setting this specific resolution so pixel counts can be controlled easier
@@ -406,13 +416,25 @@ def main():
 
             last_mazeOrigin = latest_data['maze_origin']
             last_scale      = latest_data['scale']
-            last_tf_camera  = np.array(latest_data['tf_camera2world'])
+            last_tf_camera2world  = np.array(latest_data['tf_camera2world'])
+            last_tf_body2camera = np.array(latest_data['tf_body2camera'])
 
-            print('\nDebug')
+            print('\n<< Last Maze Information')
             print('last_origin',last_mazeOrigin)
             print('last_scale',last_scale)
-            print('last_tf_camera')
-            print(last_tf_camera)
+
+            print('last_tf_camera2world (fixed)')
+            rot_camera_hardcode = np.array([[0,-1,0],[-1,0,0],[0,0,-1]])
+            translate = last_tf_camera2world[:-1,-1].tolist()
+            last_tf_camera2world = tf_tool.generateTransMatrix(rot_camera_hardcode, translate)
+            print(np.around(last_tf_camera2world,2))
+
+            print('last_tf_body2camera')
+            print(last_tf_body2camera)
+
+            print('\n<< Maze Body Frame in World Coordinates')
+            tf_maze2world = np.matmul(last_tf_camera2world, last_tf_body2camera)
+            print(np.around(tf_maze2world,2))
 
 
 
@@ -437,17 +459,17 @@ def main():
             path_as_tf_matrices = prepare_path_tf_ready(path_as_xyz)
 
             # Find & Apply Rigid Body Transform to Maze 
-            tf = transformations()
+
             body_rot = np.matrix('1 0 0; 0 1 0; 0 0 1')   # rot(z,90deg)    ##TODO: get from DREAM3D pipeline  body_rot=retrieve_pose_from_dream3d(_)
             body_transl = np.matrix('1.96846; -2.55415; 0.6200')
-            body_frame = tf.generateTransMatrix(body_rot, body_transl)
+            body_frame = tf_tool.generateTransMatrix(body_rot, body_transl)
             print('Maze Origin Frame Calculated to be @ ', body_frame)
 
             # Rotate Path (as Rigid Body) according to body_frame
-            path_via_fixed_frame = tf.convertPath2FixedFrame(path_as_tf_matrices, body_frame)
+            path_via_fixed_frame = tf_tool.convertPath2FixedFrame(path_as_tf_matrices, body_frame)
 
             # Convert Path of Transforms to Robot Poses
-            new_path_poses = tf.convertPath2RobotPose(path_via_fixed_frame)
+            new_path_poses = tf_tool.convertPath2RobotPose(path_via_fixed_frame)
             starting_orientation = maze_stool_start[-4:]
 
             raw_input('>> Begin Solving maze <enter>')
