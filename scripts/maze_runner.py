@@ -176,6 +176,8 @@ def characterize_maze(camera, workspace_path, img_id, maze_size, featureData_dot
     ## Maze Body Frame (origin @ NW dot)(green dot)
     from transformations import transformations
     tf_tool = transformations()
+
+    #todo: Z-Axis inhereted from Camera Ref Frame? 
     mazeOrigin = dots['green']['centroid_camera_frame']
     body_frame = tf_tool.generateTransMatrix(rotationMatrix, mazeOrigin)
 

@@ -225,11 +225,14 @@ class Dream3DPostProcess(object):
 
 
         # Debug by showing images
-        # cv2.imshow("Imported Image: Maze Path w/ Envr Clutter", img)
-        # cv2.imshow("Masked Maze Path", img_mask)
-        # cv2.imshow("Masked Image Rotated", img_rotated)
-        # cv2.imshow("Masked Image Cropped", img_crop)
-        # cv2.waitKey(0)
+        print(rotMatrix)
+        angle = np.arccos((rotMatrix[0,0] + rotMatrix[1,1] + rotMatrix[2,2] - 1)/2)
+        print("Axis Angle Rotation (about Z-axis) of : " + str(int(np.degrees(angle))) + "degrees")
+        cv2.imshow("Imported Image: Maze Path w/ Envr Clutter", img)
+        cv2.imshow("Masked Maze Path", img_mask)
+        cv2.imshow("Masked Image Rotated", img_rotated)
+        cv2.imshow("Masked Image Cropped", img_crop)
+        cv2.waitKey(0)
 
 
         return path_crop_img
