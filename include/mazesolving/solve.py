@@ -77,12 +77,17 @@ def solve(factory, method, input_file, output_file):
 
     """
     Output CSV of resultant path
+    >> Flip X, Y components to match image convention used throughout package.
     """
-    print("\nSaving Solved Path as CSV (row,col)(top->bot)")
-    print(resultpath)
+    print("\nSaving Solved Path as CSV (col,row)(top->bot)")
+    #print(resultpath)
+    resultpath_flipped = []
+    for node in resultpath:
+        resultpath_flipped.append((node[1], node[0]))
+
     with open(str(output_file) + '.csv', 'w') as csvfile:
         write = csv.writer(csvfile, delimiter=',')
-        for i in resultpath:
+        for i in resultpath_flipped:
             write.writerow(i)
         csvfile.close()
 
