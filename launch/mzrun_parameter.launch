@@ -1,0 +1,21 @@
+<!-- Set System Parameters -->
+<launch>
+
+    <!-- Robot Parameters -->
+    <arg name="robot_group" default="cluster" />
+    <arg name="eef_vision" default="r2_eef_camera" />
+    <arg name="eef_marker" default="r2_eef_pointer" />
+
+    <arg name="moveit_vel" default="0.2" />
+    <arg name="moveit_acc" default="0.2" />
+
+
+    <!-- Set into ROS Parameter Server -->
+    <param name="robot_group" value="$(arg robot_group)" type="str" />
+    <param name="eef_vision" value="$(arg eef_vision)" type="str" />
+    <param name="eef_marker" value="$(arg eef_marker)" type="str" />
+
+    <param name="moveit_vel" value="$(arg moveit_vel)" type="double" />
+    <param name="moveit_acc" value="$(arg moveit_acc)" type="double" />
+
+</launch>
