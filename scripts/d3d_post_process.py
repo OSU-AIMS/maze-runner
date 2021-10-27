@@ -243,7 +243,7 @@ class Dream3DPostProcess(object):
         """
         Call Dream3D Maurer Filter Pipeline. Post-process generate image.
         :param path_image_cropped: Absolute file path to the cropped maze
-        :param mzrun_ws_path: Absolute path to maze-runner package working directory
+        :param mzrun_ws_path: Absolute path to maze_runner package working directory
         :return: Saves new Image (maze_maurer_path.tiff)
         """
 
@@ -319,7 +319,7 @@ class Dream3DPostProcess(object):
         """
         Call Dream3D Maurer Filter Pipeline. Post-process generate image.
         :param path_image_cropped: Absolute file path to the cropped maze
-        :param mzrun_ws_path: Absolute path to maze-runner package working directory
+        :param mzrun_ws_path: Absolute path to maze_runner package working directory
         :return: Filename (less extension)  (maze_maurer_path.tiff)
         """
 
@@ -345,12 +345,12 @@ def main():
 
     # Demonstration Code:
     color_names = ["red", "green", "blue"]
-    mzrun_ws_path = '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws'
-    centroid_filepaths = ['/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/feature_redDot.csv',
-                          '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/feature_greenDot.csv',
-                          '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/feature_blueDot.csv'
+    mzrun_ws_path = '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze_runner/mzrun_ws'
+    centroid_filepaths = ['/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze_runner/mzrun_ws/feature_redDot.csv',
+                          '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze_runner/mzrun_ws/feature_greenDot.csv',
+                          '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze_runner/mzrun_ws/feature_blueDot.csv'
                           ]
-    mask_MazeOnly = '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws/mask_MazeOnly.tiff'
+    mask_MazeOnly = '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze_runner/mzrun_ws/mask_MazeOnly.tiff'
     
 
 

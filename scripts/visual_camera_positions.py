@@ -71,7 +71,7 @@ def main():
     # Find mzrun_ws
     #dir_mzrun = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     json_file_name = '/camera_poses.json'
-    mzrun_ws = '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze-runner/mzrun_ws'
+    mzrun_ws = '/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze_runner/mzrun_ws'
     input_json_file = mzrun_ws + json_file_name
 
 

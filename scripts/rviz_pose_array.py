@@ -103,7 +103,7 @@ def last_recorded(mzrun_ws):
 ## MAIN CODE ##
 def main():
 
-    #Copied from maze-runner.py
+    #Copied from maze_runner.py
     import os
     import numpy as np
     from transformations import transformations

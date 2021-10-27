@@ -14,7 +14,7 @@ The following section explains how to setup the package to work.
 
 ### Required Repositories
   Clone the below repositories into your catkin-tools workspace:
-  - [maze-runner](https://github.com/OSU-AIMS/maze-runner)
+  - [maze_runner](https://github.com/OSU-AIMS/maze_runner)
   - [ros-industrial/Motoman](https://github.com/ros-industrial/motoman)
 
 
@@ -22,5 +22,5 @@ The following section explains how to setup the package to work.
 
 ```
 roslaunch motoman_mh5_moveit_config demo.roslaunch
-rosrun maze-runner follow_solved_maze.py
+rosrun maze_runner follow_solved_maze.py
 ```

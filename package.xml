@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>maze-runner</name>
+  <name>maze_runner</name>
   <version>0.0.1</version>
   <description>
     <p>PROJECT: "Maze Runner"</p>
