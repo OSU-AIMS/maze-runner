@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Tier1 Launch File -->
+
+<launch>
+
+    <!-- Set Launch Parameters -->
+    <arg name="robot"       default="mh5l" />
+    <arg name="sim_robot"   default="true" />
+    <arg name="sim_vision"  default="false" /> <!-- TODO: setup simulation of camera data -->
+    
+
+    <!-- SubSystem Setup: Robot Support -->
+    <group if="$(eval arg('robot')=='mh5l')">
+        <include file="$(find maze_runner)/launch_refactor/mh5l_moveitconfig.launch" >
+            <arg name="sim" value="$(arg sim_robot)" />
+            <arg name="controller" unless="$(arg sim_robot)" value="fs100" />
+            <arg name="robot_ip" unless="$(arg sim_robot)" default="10.10.10.200" />
+        </include>
+    </group>
+    <!-- Cluster not integrated yet. TODO.
+        <group if="$(eval arg('robot')=='cluster')">
+            <include file="$(find maze_runner)/launch_refactor/cluster_moveitconfig.launch" >
+                <arg name="sim" value="$(arg sim_robot)" />
+                <arg name="controller" if="$(arg sim_robot)" value="dx200" />
+                <arg name="robot_ip" if="$(arg sim_robot)" default="10.10.10.210" />
+            </include>
+        </group>
+    -->
+    
+
+    <!--  SubSystem Setup: Vision Support -->
+    <!-- <node pkg="maze_runner" type="visual_camera_positions.py" name="camera_pose_array" output="screen" launch-prefix="gnome-terminal -command" /> -->
+
+    <group if="$(arg sim_vision)" >
+        <!-- TODO -->
+    </group>
+
+    <group unless="$(arg sim_vision)" >
+        <include file="$(find maze_runner)/launch_refactor/vision_system.launch" />
+    </group>
+
+
+    <!-- Launch TopLevel Python Script -->
+    <!-- <node pkg="maze_runner" type="maze_runner.py" name="maze_runner" output="screen" launch-prefix="gnome-terminal -command" /> -->
+
+
+</launch>

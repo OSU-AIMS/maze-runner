@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- This file derived from AIMS-ROBOT-ALL moveit_planning_execution.launch default launcher. -->
+
+<launch>
+
+    <!-- Load MH5L Joint Names: -->
+    <rosparam command="load" file="$(find motoman_mh5_support)/config/joint_names_mh5.yaml"/>
+
+    <!-- Simulated or Real Robot? -->
+    <!-- Pass thru arguments: "sim", "robot_ip", "controller" -->
+    <arg name="sim" />
+    <arg name="robot_ip" unless="$(arg sim)" />
+    <arg name="controller" unless="$(arg sim)" />
+
+
+    <!-- Load robot_description parameter before launching ROS-I nodes -->
+    <include file="$(find robot_mh5l_pgn64_table_moveit_config)/launch/planning_context.launch" >
+        <arg name="load_robot_description" value="true" />
+    </include>
+
+    <!-- Simulated Robot Interface -->
+    <group if="$(arg sim)">
+        <include file="$(find industrial_robot_simulator)/launch/robot_interface_simulator.launch" />
+    </group>
+
+    <!-- Real Robot Interface -->
+    <!--   - includes: robot_state, motion_interface, and joint_trajectory_action nodes -->
+    <!--   - replace these calls with appropriate robot-specific calls or launch files -->
+    <group unless="$(arg sim)">
+        <include file="$(find motoman_mh5_support)/launch/robot_interface_streaming_mh5l.launch" >
+            <arg name="robot_ip" value="$(arg robot_ip)"/>
+            <arg name="controller" value="$(arg controller)"/>
+        </include>
+    </group>
+
+    <!-- Publish the Robot State (tf transforms) -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+    <!-- Setup Planning Scene -->
+    <include file="$(find robot_mh5l_pgn64_table_moveit_config)/launch/move_group.launch">
+        <arg name="publish_monitored_planning_scene" value="true" />
+    </include>
+
+</launch>
