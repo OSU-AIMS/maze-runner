@@ -1,0 +1,23 @@
+
+
+<launch>
+
+    <!-- Publish Transform from "camera" to camera mount to correct frame convention disagreements. -->
+    <group if="$(eval arg('robot')=='gp7')">
+        <!-- TODO -->
+    </group>
+
+    <group if="$(eval arg('robot')=='ms210')">
+        <node pkg="tf" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 -1.579 3.14159 r2_tool_camera camera_link 100" />
+    </group>
+
+
+
+    <!-- TF Listener & Publisher for the Transform between Origin and Camera -->
+    <launch>
+        <node pkg="maze_runner" type="tf_camera_transform_publisher.py"  name="tf_origin_to_camera_transform" output="log" respawn="true" />
+    </launch>
+
+
+
+</launch>
