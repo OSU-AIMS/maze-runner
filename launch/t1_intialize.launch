@@ -7,7 +7,7 @@
     <!-- Configureable Launch Parameters -->
     <arg name="robot"       default="gp7" />
     <arg name="sim_robot"   default="true" />
-    <arg name="sim_vision"  default="false" />
+    <arg name="sim_vision"  default="true" />
 
 
     <!-- Robot Parameters -->
@@ -39,9 +39,14 @@
 
     <!--  SubSystem Setup: Vision Support -->
     <group if="$(arg sim_vision)" >
-        <!-- TODO -->
-        <!-- TODO -->
-        <!-- TODO -->
+        <!-- Static Image Publisher to stand in for real camera -->
+        <node pkg="image_publisher" type="image_publisher" name="color" ns="camera"
+            args="$(find maze_runner)/sample_content/vision_processing/maze_labFloor_far.jpg" >
+            <param name="flip_horizontal" value="false" />
+            <param name="flip_vertical" value="false" />
+            <param name="frame_id" value="camera_link" />
+            <param name="publish_rate" value="15" />
+        </node>
     </group>
     <group unless="$(arg sim_vision)" >
         <arg name="iRS_info_topic" default="/camera/aligned_depth_to_color/camera_info" />
@@ -51,7 +56,8 @@
         </include>
     </group>
 
-
+    <node pkg="maze_runner" type="node_vision.py" name="vision_processing" 
+        respawn="true" />
 
 
 </launch>
