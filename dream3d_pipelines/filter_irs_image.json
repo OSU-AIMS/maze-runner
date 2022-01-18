@@ -144,21 +144,21 @@
                 "Attribute Array Name": "ImageData_Red", 
                 "Attribute Matrix Name": "CellData", 
                 "Comparison Operator": 0, 
-                "Comparison Value": 60, 
+                "Comparison Value": 30, 
                 "Data Container Name": "ImageDataContainer"
             }, 
             {
                 "Attribute Array Name": "ImageData_Green", 
                 "Attribute Matrix Name": "CellData", 
                 "Comparison Operator": 1, 
-                "Comparison Value": 110, 
+                "Comparison Value": 80, 
                 "Data Container Name": "ImageDataContainer"
             }, 
             {
                 "Attribute Array Name": "ImageData_Blue", 
                 "Attribute Matrix Name": "CellData", 
                 "Comparison Operator": 0, 
-                "Comparison Value": 95, 
+                "Comparison Value": 80, 
                 "Data Container Name": "ImageDataContainer"
             }
         ]
