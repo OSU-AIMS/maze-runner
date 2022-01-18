@@ -12,6 +12,8 @@
 import rospy
 import message_filters
 
+import vision_processor
+
 from sensor_msgs.msg import Image
 from maze_runner.msg import MazeData
 
@@ -22,6 +24,13 @@ class VISION_PROCESSING():
         self.publish_results = pub
         self.color = Image
         self.depth = Image
+
+    def testColorCallback(self, data_color):
+        """
+            TEMPORARY FUNCTION.
+            Used for testing the color image input ONLY.
+        """
+        self.color = data_color
 
     def synchronousCallback(self, data_color, data_depth):
         """
@@ -59,14 +68,17 @@ def main():
     rospy.loginfo("Vision Post-Processing Node Started")
 
     pub         = rospy.Publisher("MazeData", MazeData, queue_size=3)
-    sub_color   = message_filters.Subscriber("/camera/color/image_raw", Image)
-    sub_depth   = message_filters.Subscriber("/camera/aligned_depth_to_color/image_raw", Image)
+    # sub_color   = message_filters.Subscriber("/camera/color/image_raw", Image)
+    # sub_depth   = message_filters.Subscriber("/camera/aligned_depth_to_color/image_raw", Image)
 
     vp = VISION_PROCESSING(pub)
 
     # Exact Time Sync required. Consider using message_filters.ApproximateTimeSynchronizer in future
-    ts = message_filters.TimeSynchronizer([sub_color, sub_depth], queue_size=10)
-    ts.registerCallback(vp.synchronousCallback)
+    # ts = message_filters.TimeSynchronizer([sub_color, sub_depth], queue_size=10)
+    # ts.registerCallback(vp.synchronousCallback)
+
+    # TEMPORARY SUB FOR TESTING
+    sub_color   = rospy.Subscriber("/camera/color/image_raw", Image, vp.testColorCallback)
 
     while not rospy.is_shutdown():
         vp.pubResults()

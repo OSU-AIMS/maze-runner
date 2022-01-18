@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+#
+# Support file for node: vision_processing
+# 
+
 class DataSaver(object):
     """
     All data saving functions wrapped in one tool.
