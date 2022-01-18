@@ -98,16 +98,18 @@ def retrieve_pose_from_dream3d(workspace_path, image_path, locator_scalar_tolera
     data["15"]["ScalarTolerance"] = locator_scalar_tolerance
     data["16"]["ScalarTolerance"] = locator_scalar_tolerance
 
+    # Desired Outputs
     data["23"]["FeatureDataFile"] = path_redDot
     data["24"]["FeatureDataFile"] = path_greenDot
     data["25"]["FeatureDataFile"] = path_blueDot
+    data["31"]["FileName"] = workspace_path + '/mask_MazeOnly.tiff'
 
+    # Debugging Tools
     data["26"]["OutputFilePath"] = workspace_path + '/feature_redDot_array.csv'
     data["28"]["OutputFilePath"] = workspace_path + '/filter_irs_image.dream3d'
-
-    data["31"]["FileName"] = workspace_path + '/mask_MazeOnly.tiff'
     data["34"]["FileName"] = workspace_path + '/mask_mostlyBlue.tiff'
 
+    # Write out updated Json
     with open(pipeline, 'w') as jsonFile:
         json.dump(data, jsonFile, indent=4, sort_keys=True)
 
