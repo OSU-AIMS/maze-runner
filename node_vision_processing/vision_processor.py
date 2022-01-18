@@ -12,6 +12,7 @@ import os
 import subprocess
 import json
 
+from cv_bridge import CvBridge, CvBridgeError
 import rospy
 import rospkg
 
@@ -20,14 +21,25 @@ def VISION_PROCESSOR(data_color, data_depth):
     """
 
     """
+
     # Reference Variables
     rospack       = rospkg.RosPack()
     workspace_dir = os.path.join(rospack.get_path('maze_runner'), 'mzrun_ws')
 
-    image_path_color = os.path.join(workspace_dir,'maze_1.png')
 
+    # Process Input Data from ROS message to .Mat object
+    bridge = CvBridge()
+    image_color = bridge.imgmsg_to_cv2(data_color, "bgr8")
+    image_depth = bridge.imgmsg_to_cv2(data_depth, "passthrough") 
+
+    image_path_color = os.path.join(workspace_dir,'color.tiff')
+    image_path_depth = os.path.join(workspace_dir,'depth.tiff')
+
+    cv2.imwrite(image_path_color, image_color)
+    cv2.imwrite(image_path_depth, image_depth)
 
     # Testing
+    # image_path_color = os.path.join(workspace_dir,'maze_1.png')
     # cv2.imshow("color", data_color)
     # cv2.imshow("depth", data_depth)
     # cv2.waitKey()

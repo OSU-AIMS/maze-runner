@@ -8,7 +8,6 @@
 #
 # Node: vision_processing
 
-import time
 import rospy
 import message_filters
 
@@ -17,11 +16,9 @@ import vision_processor
 from sensor_msgs.msg import Image
 from maze_runner.msg import MazeData
 
-import cv2
-from cv_bridge import CvBridge, CvBridgeError
 
 
-class VISION_PROCESSING():
+class VISION_PROCESSING_CONTROLLER():
 
     def __init__(self, pub):
         self.publish_results = pub
@@ -48,9 +45,11 @@ class VISION_PROCESSING():
             Calls vision processing function using latest set of synchronous data and returns results.
             Publishes results. 
         """
+        # ToDo: Add Time Check to ensure only recent messages are being processed
 
-        start = time.time()
-        rospy.loginfo("Vision Post-Processer took: " + str(time.time() - start) + " seconds.")
+        start = rospy.get_time()
+        vision_processor.VISION_PROCESSOR(self.color, self.depth)
+        rospy.loginfo("Vision Post-Processer took: " + str(rospy.get_time() - start) + " seconds.")
 
         ## fill in a new message based on information recieved from post-processor
         msg = MazeData
@@ -76,14 +75,11 @@ def main():
     sub_color   = message_filters.Subscriber("/camera/color/image_raw", Image)
     sub_depth   = message_filters.Subscriber("/camera/aligned_depth_to_color/image_raw", Image)
 
-    vp = VISION_PROCESSING(pub)
+    vp = VISION_PROCESSING_CONTROLLER(pub)
 
     # Exact Time Sync required. Consider using message_filters.ApproximateTimeSynchronizer in future
     ts = message_filters.TimeSynchronizer([sub_color, sub_depth], queue_size=10)
     ts.registerCallback(vp.synchronousCallback)
-
-    # TEMPORARY SUB FOR TESTING
-    # sub_color   = rospy.Subscriber("/camera/color/image_raw", Image, vp.testColorCallback)
 
     rospy.loginfo("Waiting for first message from camera...")
     rospy.wait_for_message("/camera/color/image_raw", Image)
@@ -100,4 +96,4 @@ if __name__ == '__main__':
         exit()
     except KeyboardInterrupt:
         exit()
-    cv2.destroyAllWindows()
+
