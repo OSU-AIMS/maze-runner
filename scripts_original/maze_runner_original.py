@@ -72,55 +72,6 @@ import cv2
 #####################################################
 
 
-def retrieve_pose_from_dream3d(workspace_path, image_path, locator_scalar_tolerance=1000):
-    """
-    Input Dream3D. Don't know what this looks like. 
-    Place holder! Yay!
-    """
-    import os
-    import subprocess
-    import json
-
-    pipeline = os.path.dirname(workspace_path) +'/dream3d_pipelines/filter_irs_image.json'
-
-    path_redDot   = workspace_path + '/feature_redDot.csv'
-    path_greenDot = workspace_path + '/feature_greenDot.csv'
-    path_blueDot  = workspace_path + '/feature_blueDot.csv'
-
-    # Setup & Run Dream3D / Simple Pipeline
-    with open(pipeline, 'r') as jsonFile:
-        data = json.load(jsonFile)
-
-    data["00"]["FileName"] = image_path
-
-    # Feature Segmenter Settings
-    data["14"]["ScalarTolerance"] = locator_scalar_tolerance
-    data["15"]["ScalarTolerance"] = locator_scalar_tolerance
-    data["16"]["ScalarTolerance"] = locator_scalar_tolerance
-
-    # Desired Outputs
-    data["23"]["FeatureDataFile"] = path_redDot
-    data["24"]["FeatureDataFile"] = path_greenDot
-    data["25"]["FeatureDataFile"] = path_blueDot
-    data["31"]["FileName"] = workspace_path + '/mask_MazeOnly.tiff'
-
-    # Debugging Tools
-    data["26"]["OutputFilePath"] = workspace_path + '/feature_redDot_array.csv'
-    data["28"]["OutputFilePath"] = workspace_path + '/filter_irs_image.dream3d'
-    data["34"]["FileName"] = workspace_path + '/mask_mostlyBlue.tiff'
-
-    # Write out updated Json
-    with open(pipeline, 'w') as jsonFile:
-        json.dump(data, jsonFile, indent=4, sort_keys=True)
-
-    # Workaround to supress output.
-    d3d_output = open(workspace_path + '/temp_pipelineResult.txt', 'a')
-    subprocess.call(["/opt/dream3d/bin/PipelineRunner", "-p", pipeline], stdout=d3d_output, stderr=d3d_output)
-
-    featureData_dots_filepaths = [path_redDot, path_greenDot, path_blueDot]
-
-    print(">> Dream3D Pipeline Runner Complete")
-    return featureData_dots_filepaths
 
 
 
