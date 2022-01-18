@@ -8,7 +8,7 @@
 #
 # Node: vision_processing
 
-
+import time
 import rospy
 import message_filters
 
@@ -48,8 +48,9 @@ class VISION_PROCESSING():
             Calls vision processing function using latest set of synchronous data and returns results.
             Publishes results. 
         """
-        ## call post-processor
-        rospy.loginfo("Post-Process Request Started.")
+
+        start = time.time()
+        rospy.loginfo("Vision Post-Processer took: " + str(time.time() - start) + " seconds.")
 
         ## fill in a new message based on information recieved from post-processor
         msg = MazeData

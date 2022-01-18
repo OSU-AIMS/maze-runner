@@ -14,11 +14,12 @@ import json
 
 import rospy
 import rospkg
-import time
 
 
+def VISION_PROCESSOR(data_color, data_depth):
+    """
 
-def main():
+    """
     # Reference Variables
     rospack       = rospkg.RosPack()
     workspace_dir = os.path.join(rospack.get_path('maze_runner'), 'mzrun_ws')
@@ -42,14 +43,9 @@ def main():
 
     dot_feature_paths = [path_redDot, path_greenDot, path_blueDot]
 
+
     # Run Pose Processor
-    start = time.time()
     runD3D_mazeLocators(image_path_color, dot_feature_paths, path_maze)
-
-
-
-    rospy.loginfo("PostProcess Runner took: " + str(time.time() - start) + " seconds.")
-
 
 
 if __name__ == '__main__':

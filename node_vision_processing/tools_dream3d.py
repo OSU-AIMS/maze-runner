@@ -54,7 +54,7 @@ def runD3D_mazeLocators(input_image_path, result_feature_path, result_maze_path,
     d3d_output = open(d3d_output_path, 'w')
     subprocess.call(["/opt/dream3d/bin/PipelineRunner", "-p", pipeline], stdout=d3d_output, stderr=d3d_output)
 
-    rospy.loginfo("Dream3D Pipeline Runner Complete.")
+    rospy.logdebug("Dream3D Pipeline Runner Complete.")
     return 1
 
 
