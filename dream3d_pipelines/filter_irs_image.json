@@ -511,7 +511,7 @@
     }, 
     "28": {
         "FilterVersion": "1.2.815", 
-        "Filter_Enabled": true, 
+        "Filter_Enabled": false, 
         "Filter_Human_Label": "Write DREAM.3D Data File", 
         "Filter_Name": "DataContainerWriter", 
         "Filter_Uuid": "{3fcd4c43-9d75-5b86-aad4-4441bc914f37}", 
@@ -568,7 +568,7 @@
     }, 
     "32": {
         "FilterVersion": "1.2.815", 
-        "Filter_Enabled": true, 
+        "Filter_Enabled": false, 
         "Filter_Human_Label": "Convert AttributeArray Data Type", 
         "Filter_Name": "ConvertData", 
         "Filter_Uuid": "{f4ba5fa4-bb5c-5dd1-9429-0dd86d0ecb37}", 
@@ -587,7 +587,7 @@
             "Data Container Name": "ImageDataContainer"
         }, 
         "FilterVersion": "1.2.815", 
-        "Filter_Enabled": true, 
+        "Filter_Enabled": false, 
         "Filter_Human_Label": "Replace Value in Array (Conditional)", 
         "Filter_Name": "ConditionalSetValue", 
         "Filter_Uuid": "{47cafe63-83cc-5826-9521-4fb5bea684ef}", 
@@ -601,7 +601,7 @@
     "34": {
         "FileName": "/home/aims-zaphod/AA_DEVL/ws_mazerunner_multibot/src/maze_runner/mzrun_ws/mask_mostlyBlue.tiff", 
         "FilterVersion": "1.0.496", 
-        "Filter_Enabled": true, 
+        "Filter_Enabled": false, 
         "Filter_Human_Label": "ITK::Image Writer", 
         "Filter_Name": "ITKImageWriter", 
         "Filter_Uuid": "{11473711-f94d-5d96-b749-ec36a81ad338}", 

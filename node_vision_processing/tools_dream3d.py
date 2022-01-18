@@ -50,7 +50,7 @@ def runD3D_mazeLocators(input_image_path, result_feature_path, result_maze_path,
         json.dump(data, jsonFile, indent=4, sort_keys=True)
 
     # Workaround to supress output.
-    d3d_output_path = os.path.join(log_dir, 'vision_debug/temp_pipelineResult.txt')
+    d3d_output_path = os.path.join(log_dir, 'log_D3D_mazeLocators.txt')
     d3d_output = open(d3d_output_path, 'w')
     subprocess.call(["/opt/dream3d/bin/PipelineRunner", "-p", pipeline], stdout=d3d_output, stderr=d3d_output)
 
