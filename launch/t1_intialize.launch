@@ -53,6 +53,7 @@
         <include file="$(find realsense2_camera)/launch/rs_camera.launch" >
             <arg name="align_depth" value="true"/>
             <arg name="enable_pointcloud" value="true"/>
+            <arg name="initial_reset" value="true" />
         </include>
     </group>
 

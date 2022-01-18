@@ -17,6 +17,9 @@ import vision_processor
 from sensor_msgs.msg import Image
 from maze_runner.msg import MazeData
 
+import cv2
+from cv_bridge import CvBridge, CvBridgeError
+
 
 class VISION_PROCESSING():
 
@@ -46,12 +49,13 @@ class VISION_PROCESSING():
             Publishes results. 
         """
         ## call post-processor
+        rospy.loginfo("Post-Process Request Started.")
 
         ## fill in a new message based on information recieved from post-processor
         msg = MazeData
         
         ## publish message
-        self.publish_results.publish(msg)
+        # self.publish_results.publish(msg)
 
 
 def main():
@@ -68,17 +72,20 @@ def main():
     rospy.loginfo("Vision Post-Processing Node Started")
 
     pub         = rospy.Publisher("MazeData", MazeData, queue_size=3)
-    # sub_color   = message_filters.Subscriber("/camera/color/image_raw", Image)
-    # sub_depth   = message_filters.Subscriber("/camera/aligned_depth_to_color/image_raw", Image)
+    sub_color   = message_filters.Subscriber("/camera/color/image_raw", Image)
+    sub_depth   = message_filters.Subscriber("/camera/aligned_depth_to_color/image_raw", Image)
 
     vp = VISION_PROCESSING(pub)
 
     # Exact Time Sync required. Consider using message_filters.ApproximateTimeSynchronizer in future
-    # ts = message_filters.TimeSynchronizer([sub_color, sub_depth], queue_size=10)
-    # ts.registerCallback(vp.synchronousCallback)
+    ts = message_filters.TimeSynchronizer([sub_color, sub_depth], queue_size=10)
+    ts.registerCallback(vp.synchronousCallback)
 
     # TEMPORARY SUB FOR TESTING
-    sub_color   = rospy.Subscriber("/camera/color/image_raw", Image, vp.testColorCallback)
+    # sub_color   = rospy.Subscriber("/camera/color/image_raw", Image, vp.testColorCallback)
+
+    rospy.loginfo("Waiting for first message from camera...")
+    rospy.wait_for_message("/camera/color/image_raw", Image)
 
     while not rospy.is_shutdown():
         vp.pubResults()
@@ -92,3 +99,4 @@ if __name__ == '__main__':
         exit()
     except KeyboardInterrupt:
         exit()
+    cv2.destroyAllWindows()
