@@ -68,7 +68,7 @@ def main():
     """
 
     rospy.init_node('vision_processing', anonymous=False)
-    rate = rospy.Rate(1) # 1hz = 1 cycle/sec
+    rate = rospy.Rate(0.5) # 1hz = 1 cycle/sec
     rospy.loginfo("Vision Post-Processing Node Started")
 
     pub         = rospy.Publisher("MazeData", MazeData, queue_size=3)
