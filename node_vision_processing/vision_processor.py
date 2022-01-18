@@ -14,6 +14,7 @@ import json
 
 import rospy
 import rospkg
+import time
 
 
 
@@ -42,8 +43,12 @@ def main():
     dot_feature_paths = [path_redDot, path_greenDot, path_blueDot]
 
     # Run Pose Processor
+    start = time.time()
     runD3D_mazeLocators(image_path_color, dot_feature_paths, path_maze)
 
+
+
+    rospy.loginfo("PostProcess Runner took: " + str(time.time() - start) + " seconds.")
 
 
 
