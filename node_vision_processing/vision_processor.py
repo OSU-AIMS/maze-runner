@@ -7,7 +7,7 @@
 import cv2
 import numpy as np
 
-from RUN_D3D import runD3D_mazeLocators, runD3D_mazePath
+from RUN_D3D import runD3D_mazeLocators, runD3D_maurerFilter
 import os
 import subprocess
 import json
@@ -70,8 +70,10 @@ def VISION_PROCESSOR(data_color, data_depth):
 
 
 
-    # Run Mauer Path Solver
-
+    # Run Mauer-based Path Solver
+    # raw_filter_result       = runD3D_maurerFilter(input_maze_image_filepath)
+    # maurer_image_filepath   = cleanMaurerPath(raw_filter_result)
+    # solved_path, solved_image_filepath = callPathSolver(maurer_image_filepath)
 
 
 

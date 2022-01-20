@@ -60,5 +60,39 @@ def runD3D_mazeLocators(input_image_path, result_feature_path, result_maze_path,
 
 
 
-def runD3D_mazePath():
+def runD3D_maurerFilter(input_maze_image):
+    """
+    Processor caller for preconfigured Dream3D pipeline.
+    Requires: os, subprocess, json, rospy, rospkg
+
+    :param input_maze_image:    Absolute file path to the cropped maze
+    :return output_maurer_path: Absolute file path to the Maurer Filtered maze image
+    """
+    import subprocess
+    import json
+    import rospy
+    import rospkg
+
+    rospack = rospkg.RosPack()
+    dir_pkg = rospack.get_path('maze_runner')
+    dir_log = os.path.join(dir_pkg, 'mzrun_ws') #os.environ.get('ROS_LOG_DIR')
+
+    pipeline = os.path.join(dir_pkg, 'dream3d_pipelines/filter_maurer_path.json')
+    output_maurer_path = os.path.join(dir_log, 'maze_maurer_path.tiff')
+
+    # Setup Dream3D / Simple Pipeline
+    with open(pipeline, 'r') as jsonFile:
+        data = json.load(jsonFile)
+        data["0"]["FileName"] = path_image_cropped
+        data["7"]["FileName"] = output_maurer_path
+
+    with open(pipeline, 'w') as jsonFile:
+        json.dump(data, jsonFile, indent=4)
+
+    # Run Dream3D Pipeline
+    d3d_output_path = os.path.join(dir_log, 'log_D3D_maurerPath.txt')
+    d3d_output = open(d3d_output_path, 'w')
+    subprocess.call(["/opt/dream3d/bin/PipelineRunner", "-p", pipeline], stdout=d3d_output, stderr=d3d_output)
+
+    return output_maurer_path
     print("placeholder")
