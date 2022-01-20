@@ -1,6 +1,7 @@
-
-
-
+#!/usr/bin/env python
+#
+# Support file for node: vision_processing
+# 
 
 def runD3D_mazeLocators(input_image_path, result_feature_path, result_maze_path, locator_scalar_tolerance=1000):
     """
