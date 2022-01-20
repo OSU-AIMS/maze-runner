@@ -4,18 +4,17 @@
 # 
 
 
-import cv2
-import numpy as np
 
 from RUN_D3D import runD3D_mazeLocators, runD3D_maurerFilter
-import os
-import subprocess
-import json
+from PRCS_PATH_SOLVER import cleanMaurerPath, callPathSolver
+# from PRCS_D3D_FEATURES import 
 
+import cv2
 from cv_bridge import CvBridge, CvBridgeError
+
+import os
 import rospy
 import rospkg
-
 
 
 
