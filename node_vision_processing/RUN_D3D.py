@@ -3,13 +3,14 @@
 # Support file for node: vision_processing
 # 
 
-def runD3D_mazeLocators(input_image_path, result_feature_path, result_maze_path, locator_scalar_tolerance=1000):
+def runD3D_mazeLocators(fpath_image, dot_names, locator_scalar_tolerance=1000, local_debug=False):
     """
     Processor caller for preconfigured Dream3D pipeline.
     Requires: os, subprocess, json, rospy, rospkg
 
-    Input:  RGB image 
-    Output: Centroid and Size of red, green, blue color clusters
+    :param fpath_image: Absolute filepath to maze image
+    :param dot_names:   List of Strings, 3-element. Order MUST be red, green, blue. But exact names may be changed.
+    return: Centroid and Size of red, green, blue color clusters
     """
 
     import os
@@ -18,45 +19,55 @@ def runD3D_mazeLocators(input_image_path, result_feature_path, result_maze_path,
     import rospy
     import rospkg
 
-    rospack       = rospkg.RosPack()
-    workspace_dir = rospack.get_path('maze_runner')
-    log_dir       = os.path.join(workspace_dir, 'mzrun_ws') #os.environ.get('ROS_LOG_DIR')
+    # Directories and Filepaths
+    rospack     = rospkg.RosPack()
+    dir_pkg     = rospack.get_path('maze_runner')
+    dir_wksp    = os.path.join(dir_pkg, 'mzrun_ws')
+    dir_log     = dir_wksp      #os.environ.get('ROS_LOG_DIR')
+    pipeline    = os.path.join(dir_pkg, 'dream3d_pipelines/filter_irs_image.json')
+    
+    fpath_redDot     = os.path.join(dir_wksp, 'feature_' + dot_names[0] + '.csv')
+    fpath_greenDot   = os.path.join(dir_wksp, 'feature_' + dot_names[1] + '.csv')
+    fpath_blueDot    = os.path.join(dir_wksp, 'feature_' + dot_names[2] + '.csv')
+    fpath_maze       = os.path.join(dir_wksp, 'mask_MazeOnly.tiff')
 
-    pipeline = os.path.join(workspace_dir, 'dream3d_pipelines/filter_irs_image.json')
 
     # Setup & Run Dream3D / Simple Pipeline
     with open(pipeline, 'r') as jsonFile:
         data = json.load(jsonFile)
+        data["00"]["FileName"] = fpath_image
 
-    data["00"]["FileName"] = input_image_path
+        # Feature Segmenter Settings
+        data["14"]["ScalarTolerance"] = locator_scalar_tolerance
+        data["15"]["ScalarTolerance"] = locator_scalar_tolerance
+        data["16"]["ScalarTolerance"] = locator_scalar_tolerance
 
-    # Feature Segmenter Settings
-    data["14"]["ScalarTolerance"] = locator_scalar_tolerance
-    data["15"]["ScalarTolerance"] = locator_scalar_tolerance
-    data["16"]["ScalarTolerance"] = locator_scalar_tolerance
+        # Desired Outputs
+        data["23"]["FeatureDataFile"] = fpath_redDot    # RED
+        data["24"]["FeatureDataFile"] = fpath_greenDot  # GREEN
+        data["25"]["FeatureDataFile"] = fpath_blueDot   # BLUE
+        data["31"]["FileName"]        = fpath_maze      # MAZE
 
-    # Desired Outputs
-    data["23"]["FeatureDataFile"] = result_feature_path[0]  # RED
-    data["24"]["FeatureDataFile"] = result_feature_path[1]  # GREEN
-    data["25"]["FeatureDataFile"] = result_feature_path[2]  # BLUE
-    data["31"]["FileName"]        = result_maze_path        # MAZE
-
-    # Debugging Tools
-    data["26"]["OutputFilePath"] = os.path.join(log_dir, 'vision_debug/feature_redDot_array.csv')
-    data["28"]["OutputFilePath"] = os.path.join(log_dir, 'vision_debug/filter_irs_image.dream3d')
-    data["34"]["FileName"]       = os.path.join(log_dir, 'vision_debug/single_color_mask.tiff')
+        # Debugging Tools
+        data["26"]["Filter_Enabled"] = local_debug
+        data["26"]["OutputFilePath"] = os.path.join(dir_log, 'vision_debug/feature_redDot_array.csv')
+        data["28"]["Filter_Enabled"] = local_debug
+        data["28"]["OutputFilePath"] = os.path.join(dir_log, 'vision_debug/filter_irs_image.dream3d')
+        data["34"]["Filter_Enabled"] = local_debug
+        data["34"]["FileName"]       = os.path.join(dir_log, 'vision_debug/single_color_mask.tiff')
 
     # Write out updated Json
     with open(pipeline, 'w') as jsonFile:
         json.dump(data, jsonFile, indent=4, sort_keys=True)
 
     # Workaround to supress output.
-    d3d_output_path = os.path.join(log_dir, 'log_D3D_mazeLocators.txt')
+    d3d_output_path = os.path.join(dir_log, 'log_D3D_mazeLocators.txt')
     d3d_output = open(d3d_output_path, 'w')
     subprocess.call(["/opt/dream3d/bin/PipelineRunner", "-p", pipeline], stdout=d3d_output, stderr=d3d_output)
 
-    rospy.logdebug("Dream3D Pipeline Runner Complete.")
-    return 1
+    rospy.logdebug("runD3D_mazeLocators: Runner Complete.")
+
+    return (fpath_maze, [fpath_redDot, fpath_greenDot, fpath_blueDot])
 
 
 
@@ -95,4 +106,3 @@ def runD3D_maurerFilter(input_maze_image):
     subprocess.call(["/opt/dream3d/bin/PipelineRunner", "-p", pipeline], stdout=d3d_output, stderr=d3d_output)
 
     return output_maurer_path
-    print("placeholder")
