@@ -7,7 +7,7 @@
 
 from RUN_D3D import runD3D_mazeLocators, runD3D_maurerFilter
 from PRCS_PATH_SOLVER import cleanMaurerPath, callPathSolver
-# from PRCS_D3D_FEATURES import 
+from PRCS_D3D_FEATURES import CONTEXTUALIZE_D3D_FEATURES
 
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
@@ -15,6 +15,10 @@ from cv_bridge import CvBridge, CvBridgeError
 import os
 import rospy
 import rospkg
+
+import csv
+import os
+import numpy as np
 
 
 
@@ -48,7 +52,9 @@ def VISION_PROCESSOR(data_color, data_depth):
 
 
     # Post Process Results
-    # input_maze_image_filepath = D3DpostProcessor(fpath_masked_maze, fpaths_dot_feature)
+    maze_size = [0.18, 0.18] # Realworld Measurement (in meters)
+    prcs_features = CONTEXTUALIZE_D3D_FEATURES(dot_names, fpaths_dot_feature, fpath_masked_maze, maze_size)
+    input_maze_image_filepath = prcs_features.exportResults()
 
 
     # Run Mauer-based Path Solver
