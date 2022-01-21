@@ -154,7 +154,6 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         # todo: limited to 2D. Must use different method for 3D
         # todo: this technique has inherent mathematical flaws as by using arccos(). Should use arctan().
         # angle = np.arccos(rotMatrix[0,0])
-        rospy.loginfo(rotMatrix[0,1])
         angle = np.arctan2(rotMatrix[0,1], rotMatrix[0,0])
         rospy.loginfo(angle)
         center_x = 0.5 * (len_gr*np.cos(angle) + len_gb*np.sin(angle))
@@ -205,13 +204,17 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         cv2.imwrite(path_new, img_mask)
 
 
-        # Rotate Image
-        # Use Transpose to get rotation opposite direction
-        planar_rotMatrix = rotMatrix[:-1,:-1].T
-        planar_transform = np.column_stack((planar_rotMatrix, np.array([width, height/2]).T))
+        # Find Center of Maze Points
+        x = np.mean(centroids[:,0])
+        y = np.mean(centroids[:,1])
+        center = (int(x),int(y))
 
-        image_center = tuple(np.array(img_mask.shape[1::-1])/2)
-        img_rotated = cv2.warpAffine(img_mask, planar_transform, img_mask.shape[1::-1], flags=cv2.INTER_NEAREST)
+        # Find Rotation Angle
+        angle = np.arctan2(rotMatrix[0,1], rotMatrix[0,0])
+
+        # Rotate Image about Center of Maze
+        rot_mat = cv2.getRotationMatrix2D(center, angle, scale=1.0)
+        img_rotated = cv2.warpAffine(img_mask, rot_mat, img_mask.shape[1::-1], flags=cv2.INTER_NEAREST)
 
         # Export
         path_new = "{path}_{uid}{ext}".format(path=path, uid="mask_rot", ext=ext)
@@ -228,9 +231,8 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
 
 
         # Debug by showing images
-        print(rotMatrix)
         angle = np.arccos((rotMatrix[0,0] + rotMatrix[1,1] + rotMatrix[2,2] - 1)/2)
-        # rospy.logdebug("Axis Angle Rotation (about Z-axis) of : " + str(int(np.degrees(angle))) + "degrees")
+        rospy.logdebug("Axis Angle Rotation (about Z-axis) of : " + str(int(np.degrees(angle))) + "degrees")
         # cv2.imshow("Imported Image: Maze Path w/ Envr Clutter", img)
         # cv2.imshow("Masked Maze Path", img_mask)
         # cv2.imshow("Masked Image Rotated", img_rotated)
