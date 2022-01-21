@@ -79,6 +79,7 @@ def runD3D_maurerFilter(input_maze_image):
     :param input_maze_image:    Absolute file path to the cropped maze
     :return output_maurer_path: Absolute file path to the Maurer Filtered maze image
     """
+    import os
     import subprocess
     import json
     import rospy
@@ -94,7 +95,7 @@ def runD3D_maurerFilter(input_maze_image):
     # Setup Dream3D / Simple Pipeline
     with open(pipeline, 'r') as jsonFile:
         data = json.load(jsonFile)
-        data["0"]["FileName"] = path_image_cropped
+        data["0"]["FileName"] = input_maze_image
         data["7"]["FileName"] = output_maurer_path
 
     with open(pipeline, 'w') as jsonFile:

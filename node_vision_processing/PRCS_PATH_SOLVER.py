@@ -10,7 +10,6 @@ def cleanMaurerPath(maurer_image_filepath):
     :param maurer_image_filepath: Absolute file path to the D3D Maurer filtered maze
     :return: Saves new Image (maze_maurer_path.tiff)
     """
-
     import cv2
     import numpy as np
 
@@ -49,6 +48,7 @@ def cleanMaurerPath(maurer_image_filepath):
         for col in whites:
             img[last_row, col] = 255
 
+    filepath_maurer_path = maurer_image_filepath[:-5] + "_cleaned.tiff"
     cv2.imwrite(filepath_maurer_path, img)
     # cv2.imshow("Fixed Mauer Path Entrance", img)
     # cv2.waitKey(0)
@@ -69,6 +69,7 @@ def callPathSolver(filepath_maurer_path):
     import os
     import subprocess
     import rospy
+    import rospkg
 
     # Directories and Filepaths
     rospack         = rospkg.RosPack()
