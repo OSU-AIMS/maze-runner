@@ -125,7 +125,7 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
     
         # Package into Rotation Matrix
         # https://en.wikipedia.org/wiki/Rotation_formalisms_in_three_dimensions#Formalism_alternatives
-        rot_matrix = np.stack([axis_x, axis_y, axis_z],axis=1)
+        rot_matrix = np.stack([axis_x, axis_y, axis_z], axis=1)
         
         return rot_matrix
 
@@ -182,7 +182,7 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         corner_NW = dots[self.green]['centroid']
         corner_NE = dots[self.red]['centroid']
         corner_SW = dots[self.blue]['centroid']
-        corner_SE = dots[self.blue]['centroid'] + axis_x   #potential issue spot for 3D in future
+        corner_SE = dots[self.blue]['centroid'] + axis_x   #TODO: potential issue spot for 3D in future
         #print(" > Four Corners Identified @ :", corner_NW, corner_NE, corner_SW, corner_SE)
 
         # Load Image as 8-bit, single channel
@@ -200,21 +200,23 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         # Export Masked Image
         path, ext = os.path.splitext(maskImg_MazeOnly)
         path_new = "{path}_{uid}{ext}".format(path=path, uid="mask", ext=ext)
-        #img_mask = cv2.cvtColor( img_mask, cv2.COLOR_RGB2GRAY)
         cv2.imwrite(path_new, img_mask)
 
 
         # Find Center of Maze Points
         x = np.mean(centroids[:,0])
         y = np.mean(centroids[:,1])
-        center = (int(x),int(y))
+        center = (int(x), int(y))
 
-        # Find Rotation Angle
-        angle = np.arctan2(rotMatrix[0,1], rotMatrix[0,0])
 
         # Rotate Image about Center of Maze
-        rot_mat = cv2.getRotationMatrix2D(center, angle, scale=1.0)
-        img_rotated = cv2.warpAffine(img_mask, rot_mat, img_mask.shape[1::-1], flags=cv2.INTER_NEAREST)
+        counterRotate = np.array([[0,-1],[1,0]]) * np.linalg.inv(rotMatrix)[:-1,:-1]
+        rotAngle2D = np.arctan2(counterRotate[0,0], counterRotate[1, 0])
+        rospy.logdebug("Z-Axis Angle Rotation Correction: " + str(int(np.degrees(rotAngle2D))) + " degrees")
+
+        counterTransform = cv2.getRotationMatrix2D(center, np.degrees(rotAngle2D), scale=1.0)
+        img_rotated = cv2.warpAffine(img_mask, counterTransform, img_mask.shape[1::-1], flags=cv2.INTER_NEAREST)
+
 
         # Export
         path_new = "{path}_{uid}{ext}".format(path=path, uid="mask_rot", ext=ext)
@@ -229,15 +231,6 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         path_crop_img = "{path}_{uid}{ext}".format(path=path, uid="mask_rot_crop", ext=ext)
         cv2.imwrite(path_crop_img, img_crop)   #todo: known to cause error 'floating point exception'
 
-
-        # Debug by showing images
-        angle = np.arccos((rotMatrix[0,0] + rotMatrix[1,1] + rotMatrix[2,2] - 1)/2)
-        rospy.logdebug("Axis Angle Rotation (about Z-axis) of : " + str(int(np.degrees(angle))) + "degrees")
-        # cv2.imshow("Imported Image: Maze Path w/ Envr Clutter", img)
-        # cv2.imshow("Masked Maze Path", img_mask)
-        # cv2.imshow("Masked Image Rotated", img_rotated)
-        # cv2.imshow("Masked Image Cropped", img_crop)
-        # cv2.waitKey(0)
 
         return path_crop_img
 
