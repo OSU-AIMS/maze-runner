@@ -9,7 +9,7 @@
         "FilterVersion": "1.0.496",
         "Filter_Human_Label": "ITK::Image Reader",
         "ImageDataArrayName": "MazePath",
-        "FileName": "//PATH/TO/FILE",
+        "FileName": "/home/buynak.9/AA_DEVL/ws_mzrun/src/maze-runner/mzrun_ws/mask_MazeOnly_mask_rot_crop.tiff",
         "Filter_Name": "ITKImageReader",
         "Filter_Enabled": true,
         "CellAttributeMatrixName": "CellData",
@@ -118,7 +118,7 @@
     "7": {
         "FilterVersion": "1.0.496",
         "Filter_Human_Label": "ITK::Image Writer",
-        "FileName": "//PATH/TO/FILE/maze_maurer_path.tiff",
+        "FileName": "/home/buynak.9/AA_DEVL/ws_mzrun/src/maze-runner/mzrun_ws/maze_maurer_path.tiff",
         "Plane": 0,
         "Filter_Name": "ITKImageWriter",
         "ImageArrayPath": {
