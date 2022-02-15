@@ -60,6 +60,8 @@ def VISION_PROCESSOR(data_color, data_depth):
     # Run Mauer-based Path Solver
     raw_filter_result       = runD3D_maurerFilter(input_maze_image_filepath)
     maurer_image_filepath   = cleanMaurerPath(raw_filter_result)
+
+    # Run Python Maze Solver
     solved_path, solved_image_filepath = callPathSolver(maurer_image_filepath)
 
 
