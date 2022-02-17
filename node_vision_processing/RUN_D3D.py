@@ -38,23 +38,25 @@ def runD3D_mazeLocators(fpath_image, dot_names, locator_scalar_tolerance=1000, l
         data["00"]["FileName"] = fpath_image
 
         # Feature Segmenter Settings
-        data["14"]["ScalarTolerance"] = locator_scalar_tolerance
-        data["15"]["ScalarTolerance"] = locator_scalar_tolerance
-        data["16"]["ScalarTolerance"] = locator_scalar_tolerance
+        data["20"]["ScalarTolerance"] = locator_scalar_tolerance
+        data["21"]["ScalarTolerance"] = locator_scalar_tolerance
+        data["22"]["ScalarTolerance"] = locator_scalar_tolerance
 
         # Desired Outputs
-        data["23"]["FeatureDataFile"] = fpath_redDot    # RED
-        data["24"]["FeatureDataFile"] = fpath_greenDot  # GREEN
-        data["25"]["FeatureDataFile"] = fpath_blueDot   # BLUE
-        data["31"]["FileName"]        = fpath_maze      # MAZE
+        data["29"]["FeatureDataFile"] = fpath_redDot    # RED
+        data["30"]["FeatureDataFile"] = fpath_greenDot  # GREEN
+        data["31"]["FeatureDataFile"] = fpath_blueDot   # BLUE
+        data["35"]["FileName"]        = fpath_maze      # MAZE
 
         # Debugging Tools
-        data["26"]["Filter_Enabled"] = local_debug
-        data["26"]["OutputFilePath"] = os.path.join(dir_log, 'vision_debug/feature_redDot_array.csv')
-        data["28"]["Filter_Enabled"] = local_debug
-        data["28"]["OutputFilePath"] = os.path.join(dir_log, 'vision_debug/filter_irs_image.dream3d')
-        data["34"]["Filter_Enabled"] = local_debug
-        data["34"]["FileName"]       = os.path.join(dir_log, 'vision_debug/single_color_mask.tiff')
+        data["16"]["Filter_Enabled"] = local_debug
+        data["16"]["OutputFilePath"] = os.path.join(dir_log, 'vision_debug/redDotImage.tiff')
+        data["17"]["Filter_Enabled"] = local_debug
+        data["17"]["OutputFilePath"] = os.path.join(dir_log, 'vision_debug/greenDotImage.tiff')
+        data["18"]["Filter_Enabled"] = local_debug
+        data["18"]["FileName"]       = os.path.join(dir_log, 'vision_debug/blueDotImage.tiff')
+        data["36"]["Filter_Enabled"] = local_debug
+        data["36"]["FileName"]       = os.path.join(dir_log, 'vision_debug/pipeline_filter_irs_image.dream3d')
 
     # Write out updated Json
     with open(pipeline, 'w') as jsonFile:
