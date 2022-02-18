@@ -3,7 +3,7 @@
 # Support file for node: vision_processing
 # 
 
-def runD3D_mazeLocators(fpath_image, dot_names, locator_scalar_tolerance=1000, local_debug=False):
+def runD3D_mazeLocators(fpath_image, dot_names, locator_scalar_tolerance=1000, local_debug="False"):
     """
     Processor caller for preconfigured Dream3D pipeline.
     Requires: os, subprocess, json, rospy, rospkg
@@ -38,25 +38,19 @@ def runD3D_mazeLocators(fpath_image, dot_names, locator_scalar_tolerance=1000, l
         data["00"]["FileName"] = fpath_image
 
         # Feature Segmenter Settings
+        data["18"]["ScalarTolerance"] = locator_scalar_tolerance
+        data["19"]["ScalarTolerance"] = locator_scalar_tolerance
         data["20"]["ScalarTolerance"] = locator_scalar_tolerance
-        data["21"]["ScalarTolerance"] = locator_scalar_tolerance
-        data["22"]["ScalarTolerance"] = locator_scalar_tolerance
 
         # Desired Outputs
-        data["29"]["FeatureDataFile"] = fpath_redDot    # RED
-        data["30"]["FeatureDataFile"] = fpath_greenDot  # GREEN
-        data["31"]["FeatureDataFile"] = fpath_blueDot   # BLUE
-        data["35"]["FileName"]        = fpath_maze      # MAZE
+        data["27"]["FeatureDataFile"] = fpath_redDot    # RED
+        data["28"]["FeatureDataFile"] = fpath_greenDot  # GREEN
+        data["29"]["FeatureDataFile"] = fpath_blueDot   # BLUE
+        data["33"]["FileName"]        = fpath_maze      # MAZE
 
         # Debugging Tools
-        data["16"]["Filter_Enabled"] = local_debug
-        data["16"]["OutputFilePath"] = os.path.join(dir_log, 'vision_debug/redDotImage.tiff')
-        data["17"]["Filter_Enabled"] = local_debug
-        data["17"]["OutputFilePath"] = os.path.join(dir_log, 'vision_debug/greenDotImage.tiff')
-        data["18"]["Filter_Enabled"] = local_debug
-        data["18"]["FileName"]       = os.path.join(dir_log, 'vision_debug/blueDotImage.tiff')
-        data["36"]["Filter_Enabled"] = local_debug
-        data["36"]["FileName"]       = os.path.join(dir_log, 'vision_debug/pipeline_filter_irs_image.dream3d')
+        data["34"]["Filter_Enabled"] = local_debug
+        data["34"]["OutputFile"]     = os.path.join(dir_log, 'pipeline_filter_irs_image.dream3d')
 
     # Write out updated Json
     with open(pipeline, 'w') as jsonFile:
