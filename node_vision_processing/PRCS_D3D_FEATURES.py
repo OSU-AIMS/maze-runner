@@ -30,9 +30,13 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         # Process
         self.scale 		  = self.calcScale(self.dots, maze_size_meters)
         self.rotMatrix 	  = self.calcRotation(self.dots)
-        self.mazeCentroid = self.calcMazeCentroid(self.dots, self.rotMatrix)
 
-        self.path_image_cropped = self.calcMazeMask(self.dots, maskImg_MazeOnly, self.rotMatrix)
+        if self.rotMatrix is not None:
+            self.mazeCentroid = self.calcMazeCentroid(self.dots, self.rotMatrix)
+            self.path_image_cropped = self.calcMazeMask(self.dots, maskImg_MazeOnly, self.rotMatrix)
+            return
+        else:
+            return None
 
     def loadDots(self, userColorList, userFileList, tolerance=50):
         """
@@ -105,7 +109,8 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         :param dots: Input Dictionary with three dot keys.
         :return rot_matrix: 3x3 Rotation Matrix.
         """
-        
+        import rospy
+
         # Convention:   Right-Hand-Rule
         #   Origin  :   @ GREEN
         #   X-Vector:   GREEN -> RED
@@ -113,15 +118,21 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
     
         # Use Numpy for Calculation Convenience
         
-        # Find Vectors
+        # Find Maze Axis Vectors
         axis_x = np.subtract(dots[self.red]['centroid'],    dots[self.green]['centroid'], where="array_like")
         axis_y = np.subtract(dots[self.blue]['centroid'],   dots[self.green]['centroid'])
-        axis_z = np.cross(axis_x,axis_y)
-    
-        # Normalize Everything
+
         axis_x = axis_x / np.linalg.norm(axis_x,2)
         axis_y = axis_y / np.linalg.norm(axis_y,2)
-        axis_z = axis_z / np.linalg.norm(axis_z,2)
+
+        # Check if Vectors are sufficiently square to each other
+        dot_prod = np.dot(axis_x, axis_y)
+        if dot_prod < np.cos(np.deg2rad(45)):
+            axis_z = np.cross(axis_x,axis_y)
+            axis_z = axis_z / np.linalg.norm(axis_z,2)
+        else:
+            rospy.loginfo("X & Y axis insufficiently square. Failed to assemble rotation matrix.")
+            return None
     
         # Package into Rotation Matrix
         # https://en.wikipedia.org/wiki/Rotation_formalisms_in_three_dimensions#Formalism_alternatives
@@ -136,14 +147,16 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         :return rot_matrix: 3x3 Rotation Matrix.
         """
         import rospy
+        import numpy as np
 
         # Convention:   Right-Hand-Rule
         #   Origin  :   @ GREEN
         #   X-Vector:   GREEN -> RED
         #   Y-VECTOR:   GREEN -> BLUE
     
-        # Use Numpy for Calculation Convenience
-    
+        assert rotMatrix.shape == (3, 3), "Assert: Rotation Matrix must be size (3,3)."
+        assert np.isnan(rotMatrix).any() == False, "Assert: Rotation Matrix must not contan NaN values."
+
         # Find Vectors
         side_gr = np.subtract(dots[self.red]['centroid'],    dots[self.green]['centroid'])
         side_gb = np.subtract(dots[self.blue]['centroid'],   dots[self.green]['centroid'])
@@ -155,7 +168,6 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         # todo: this technique has inherent mathematical flaws as by using arccos(). Should use arctan().
         # angle = np.arccos(rotMatrix[0,0])
         angle = np.arctan2(rotMatrix[0,1], rotMatrix[0,0])
-        rospy.loginfo(angle)
         center_x = 0.5 * (len_gr*np.cos(angle) + len_gb*np.sin(angle))
         center_y = 0.5 * (len_gb*np.cos(angle) + len_gr*np.sin(angle))
 
@@ -174,7 +186,11 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         import cv2
         import numpy as np
         import rospy
-    
+
+        # Check Input
+        assert rotMatrix.shape == (3, 3), "Assert: Rotation Matrix must be size (3,3)."
+        assert np.isnan(rotMatrix).any() == False, "Assert: Rotation Matrix must not contan NaN values."
+
         axis_x = np.subtract(dots[self.red]['centroid'],    dots[self.green]['centroid'], where="array_like")
         axis_y = np.subtract(dots[self.blue]['centroid'],   dots[self.green]['centroid'])
         
