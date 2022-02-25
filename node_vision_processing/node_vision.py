@@ -11,7 +11,7 @@
 import rospy
 import message_filters
 
-import vision_processor
+import node_vision_support
 
 from sensor_msgs.msg import Image
 from maze_runner.msg import MazeData
@@ -48,7 +48,7 @@ class VISION_PROCESSING_CONTROLLER():
         # ToDo: Add Time Check to ensure only recent messages are being processed
 
         start = rospy.get_time()
-        vision_processor.VISION_PROCESSOR(self.color, self.depth)
+        node_vision_support.VISION_PROCESSOR(self.color, self.depth)
         rospy.loginfo("Vision Post-Processer took: " + str(rospy.get_time() - start) + " seconds.")
 
         ## fill in a new message based on information recieved from post-processor
