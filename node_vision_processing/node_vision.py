@@ -111,7 +111,7 @@ def main():
     rate = rospy.Rate(0.5) # 1hz = 1 cycle/sec
     rospy.loginfo("Vision Post-Processing Node Started")
 
-    pub         = rospy.Publisher("MazeData", MazeData, queue_size=3)
+    pub         = rospy.Publisher("MazeData", MazeData, queue_size=5)
     sub_color   = message_filters.Subscriber("/camera/color/image_raw", Image)
     sub_depth   = message_filters.Subscriber("/camera/aligned_depth_to_color/image_raw", Image)
 

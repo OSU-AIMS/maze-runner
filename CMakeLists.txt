@@ -15,6 +15,7 @@ find_package(catkin REQUIRED
         moveit_ros_planning_interface
         pcl_ros
         pcl_conversions
+        rospy
         std_msgs
         geometry_msgs
         message_generation
@@ -112,7 +113,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS {THIS_PACKAGE_INCLUDE_DIRS}
 #  LIBRARIES maze_runner
-  CATKIN_DEPENDS moveit_core moveit_visual_tools moveit_ros_planning_interface
+  CATKIN_DEPENDS moveit_core moveit_visual_tools moveit_ros_planning_interface message_runtime
 #  DEPENDS system_lib
 )
 
