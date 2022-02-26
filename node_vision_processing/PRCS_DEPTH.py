@@ -23,7 +23,9 @@ class PRCS_DEPTH_MAP(object):
         depth           
         """
 
-        self.smoothDepthMap(depth_map)
+        self.depth_map_smoothed = self.smoothDepthMap(depth_map)
+
+
 
     def smoothDepthMap(self, depth_map):
         """
@@ -53,10 +55,10 @@ class PRCS_DEPTH_MAP(object):
         # cv2.imshow('test', test)
 
         cv2.imwrite('mzrun_ws/dmap_blurred.tiff', img_blur)
-        cv2.imwrite('mzrun_ws/dmap_gauss.tiff', img_gauss)
+        # cv2.imwrite('mzrun_ws/dmap_gauss.tiff', img_gauss)
         
 
-        cv2.waitKey(0)
+        # cv2.waitKey(0)
 
 
         return img_blur
@@ -64,6 +66,6 @@ class PRCS_DEPTH_MAP(object):
 
 
 
-test_map = cv2.imread('mzrun_ws/depth.tiff', -1)
-test     = PRCS_DEPTH_MAP(test_map)
+# test_map = cv2.imread('mzrun_ws/depth.tiff', -1)
+# test     = PRCS_DEPTH_MAP(test_map)
 

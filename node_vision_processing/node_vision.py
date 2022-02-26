@@ -18,6 +18,7 @@ from std_msgs.msg import Header
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Quaternion
 from geometry_msgs.msg import Pose2D
+from geometry_msgs.msg import Point
 from geometry_msgs.msg import Pose
 
 from cv_bridge import CvBridge, CvBridgeError
@@ -61,13 +62,14 @@ class VISION_PROCESSING_CONTROLLER():
         # TODO: add check to ensure only recent messages are being processed
         bridge = CvBridge()
         img_color = bridge.imgmsg_to_cv2(self.color, "bgr8")
-        img_depth = bridge.imgmsg_to_cv2(self.depth, "passthrough") 
+        img_depth = bridge.imgmsg_to_cv2(self.depth, "passthrough")
 
         feat = node_vision_support.VISION_PROCESSOR(img_color, img_depth)
 
 
         # TODO: post-process pose array for path
-        found_path = feat[3]
+        # found_path = feat[3]
+        found_path =[Pose]
 
         ## Build message
         msg = MazeData
@@ -80,8 +82,12 @@ class VISION_PROCESSING_CONTROLLER():
         msg.header           = h
         msg.scale            = feat[0]                                          # TODO: Assertion on data type
         msg.projected_origin = Pose2D(feat[1][0], feat[1][1], feat[1][2])
-        msg.pose_relative_2_camera.Point = Point(feat[2][0], feat[2][1], feat[2][2])
-        msg.pose_relative_2_camera.Quaternion = Quaternion(feat[2][3], feat[2][4], feat[2][5], feat[2][6])
+
+        p = Pose
+        p.position    = Point(feat[2][0], feat[2][1], feat[2][2])
+        p.orientation = Quaternion(feat[2][3], feat[2][4], feat[2][5], feat[2][6])
+        msg.pose_relative_2_camera = p
+
         msg.path = found_path
 
         # Process Timer ~ End
