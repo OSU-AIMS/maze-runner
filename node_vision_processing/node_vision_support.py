@@ -10,7 +10,6 @@ from PRCS_PATH_SOLVER import cleanMaurerPath, callPathSolver
 from PRCS_D3D_FEATURES import CONTEXTUALIZE_D3D_FEATURES
 
 import cv2
-from cv_bridge import CvBridge, CvBridgeError
 
 import os
 import rospy
@@ -20,11 +19,12 @@ import csv
 import os
 import numpy as np
 
+import tf
 
 
 
 
-def VISION_PROCESSOR(data_color, data_depth):
+def VISION_PROCESSOR(image_color, image_depth):
     """
 
     """
@@ -32,12 +32,6 @@ def VISION_PROCESSOR(data_color, data_depth):
     # Reference Variables
     rospack  = rospkg.RosPack()
     dir_wksp = os.path.join(rospack.get_path('maze_runner'), 'mzrun_ws')
-
-
-    # Process Input Data from ROS message to .Mat object
-    bridge = CvBridge()
-    image_color = bridge.imgmsg_to_cv2(data_color, "bgr8")
-    image_depth = bridge.imgmsg_to_cv2(data_depth, "passthrough") 
 
     fpath_color = os.path.join(dir_wksp,'color.tiff')
     fpath_depth = os.path.join(dir_wksp,'depth.tiff')
@@ -53,18 +47,36 @@ def VISION_PROCESSOR(data_color, data_depth):
 
     # Post Process Results
     maze_size = [0.18, 0.18] # Realworld Measurement (in meters)
-    prcs_features = CONTEXTUALIZE_D3D_FEATURES(dot_names, fpaths_dot_feature, fpath_masked_maze, maze_size)
-    input_maze_image_filepath = prcs_features.exportResults()
+    features = CONTEXTUALIZE_D3D_FEATURES(dot_names, fpaths_dot_feature, fpath_masked_maze, maze_size)
+    input_maze_image_filepath = features.exportResults()
+
+    rot3d_tf = np.identity(4)
+    rot3d_tf[:-1,:-1] = features.rotMatrix.astype()
+    rot3d_q = tf.transformations.quaternion_from_matrix(rot3d_tf)
 
 
-    # Run Mauer-based Path Solver
+    # Simplify & Clean Cropped Maze Image
     raw_filter_result       = runD3D_maurerFilter(input_maze_image_filepath)
     maurer_image_filepath   = cleanMaurerPath(raw_filter_result)
 
-    # Run Python Maze Solver
-    solved_path, solved_image_filepath = callPathSolver(maurer_image_filepath)
+
+    # Run Python Maze Solver on Cleaned Image
+    solved_csv_filepath, solved_image_filepath = callPathSolver(maurer_image_filepath)
 
 
-    # Create Message & Return
+    # Depth
+    # temporary, grab depth at origin and assume flat.
+    # TODO: new method to get depth at every waypoing along path
+    
+
+
+    # Calculate Pose
+    # maze_pose_relative_2_camera = [x,y,z,x,y,z,w]
+
+    # Return Results
+    # projected_2d_pose = [x,y,theta]
+    result = [features.scale, projected_2d_pose, maze_pose_relative_2_camera, path]
+
+    return result
 
 

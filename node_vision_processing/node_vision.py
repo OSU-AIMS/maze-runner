@@ -13,9 +13,14 @@ import message_filters
 
 import node_vision_support
 
-from sensor_msgs.msg import Image
 from maze_runner.msg import MazeData
+from std_msgs.msg import Header
+from sensor_msgs.msg import Image
+from geometry_msgs.msg import Quaternion
+from geometry_msgs.msg import Pose2D
+from geometry_msgs.msg import Pose
 
+from cv_bridge import CvBridge, CvBridgeError
 
 
 class VISION_PROCESSING_CONTROLLER():
@@ -24,6 +29,7 @@ class VISION_PROCESSING_CONTROLLER():
         self.publish_results = pub
         self.color = Image
         self.depth = Image
+        self.seq_counter = 0
 
     def testColorCallback(self, data_color):
         """
@@ -45,17 +51,45 @@ class VISION_PROCESSING_CONTROLLER():
             Calls vision processing function using latest set of synchronous data and returns results.
             Publishes results. 
         """
-        # ToDo: Add Time Check to ensure only recent messages are being processed
-
+        # Process Timer ~ Start
         start = rospy.get_time()
-        node_vision_support.VISION_PROCESSOR(self.color, self.depth)
+        self.seq_counter+=1
+
+
+        # Process vision
+        # Process Input Data from ROS message to .Mat object
+        # TODO: add check to ensure only recent messages are being processed
+        bridge = CvBridge()
+        img_color = bridge.imgmsg_to_cv2(self.color, "bgr8")
+        img_depth = bridge.imgmsg_to_cv2(self.depth, "passthrough") 
+
+        feat = node_vision_support.VISION_PROCESSOR(img_color, img_depth)
+
+
+        # TODO: post-process pose array for path
+        found_path = feat[3]
+
+        ## Build message
+        msg = MazeData
+        h = Header
+
+        h.stamp     = rospy.Time.now()
+        h.seq       = self.seq_counter
+        h.frame_id  = self.color.header.frame_id
+
+        msg.header           = h
+        msg.scale            = feat[0]                                          # TODO: Assertion on data type
+        msg.projected_origin = Pose2D(feat[1][0], feat[1][1], feat[1][2])
+        msg.pose_relative_2_camera.Point = Point(feat[2][0], feat[2][1], feat[2][2])
+        msg.pose_relative_2_camera.Quaternion = Quaternion(feat[2][3], feat[2][4], feat[2][5], feat[2][6])
+        msg.path = found_path
+
+        # Process Timer ~ End
         rospy.loginfo("Vision Post-Processer took: " + str(rospy.get_time() - start) + " seconds.")
 
-        ## fill in a new message based on information recieved from post-processor
-        msg = MazeData
-        
-        ## publish message
-        # self.publish_results.publish(msg)
+
+        ## Publish message
+        self.publish_results.publish(msg)
 
 
 def main():
