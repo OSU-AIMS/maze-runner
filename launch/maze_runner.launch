@@ -1,7 +1,0 @@
-<launch>
-
-  <!-- TODO. Fix issues with launcher. Unknown cause. -->
-  <node pkg="maze_runner" type="maze_runner.py" name="maze_runner" output="screen" launch-prefix="gnome-terminal --command" />
-  <node pkg="maze_runner" type="visual_camera_positions.py" name="camera_pose_array" output="screen" launch-prefix="gnome-terminal --command" />
-
-</launch>

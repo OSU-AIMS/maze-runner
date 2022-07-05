@@ -35,7 +35,9 @@
   <build_depend>moveit_visual_tools</build_depend>
   <build_depend>pcl_ros</build_depend>
   <build_depend>pcl_conversions</build_depend>
+  <build_depend>message_generation</build_depend>
 
+  <exec_depend>message_runtime</exec_depend>
   <exec_depend>motoman_mh5_moveit_config</exec_depend>
   <exec_depend>moveit_core</exec_depend>
   <exec_depend>moveit_commander</exec_depend>
