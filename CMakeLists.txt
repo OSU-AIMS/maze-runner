@@ -6,11 +6,6 @@ project(maze_runner)
 ## Compiler Setup ##
 ####################
 
-# Default to C99
-if(NOT CMAKE_C_STANDARD)
-  set(CMAKE_C_STANDARD 99)
-endif()
-
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -23,6 +18,9 @@ endif()
 
 ## Find Ament Support Packages
 find_package(ament_cmake REQUIRED)
+
+find_package(ament_cmake_python REQUIRED)
+find_package(rclpy REQUIRED)
 
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
@@ -49,9 +47,19 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 ## Install ##
 #############
 
+# Install Python Modules (must contain an __init__.py file)
+# ament_python_install_package(${PROJECT_NAME})
+
+# Install Misc ROS Elements
 install(
   DIRECTORY config launch
   DESTINATION share/${PROJECT_NAME}
+)
+
+# Install Python executables
+install(
+  PROGRAMS node_vision_processing/node_vision.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 

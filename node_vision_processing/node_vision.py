@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Software License Agreement (Apache 2.0 License)
 # Copyright (c) 2022, The Ohio State University
@@ -8,10 +8,17 @@
 #
 # Node: vision_processing
 
-import rospy
+
+#############
+## Imports ##
+#############
+
+import rclpy
+from rclpy.node import Node
+
 import message_filters
 
-import node_vision_support
+# import node_vision_support
 
 from maze_runner.msg import MazeData
 from std_msgs.msg import Header
@@ -24,36 +31,63 @@ from geometry_msgs.msg import Pose
 from cv_bridge import CvBridge, CvBridgeError
 
 
-class VISION_PROCESSING_CONTROLLER():
+######################
+## Class Controller ##
+######################
 
-    def __init__(self, pub):
-        self.publish_results = pub
+class VisionProcessingControl(Node):
+    '''
+
+    cycle_freq float: Vision processing cycle frequency in Hz. Defaults to 0.5
+    '''
+
+    def __init__(self, cycle_freq=0.5):
+
+        # Setup Node
+        super().__init__('vision_processing')
+
+        # Setup Pub/Sub
+        self.pub_maze_data = self.create_publisher(MazeData, "MazeData", qos_profile = 5)
+        sub_color = message_filters.Subscriber(self, Image, "/camera/color/image_raw")
+        sub_depth = message_filters.Subscriber(self, Image, "/camera/depth/image_rect_raw")
+
+        # Setup TimeSychronizer
+        self.ts = message_filters.TimeSynchronizer([sub_color, sub_depth], queue_size=10)
+        self.ts.registerCallback(self._synchronous_callback)
+
+        # self.get_logger().info("Waiting for first message from camera...")
+        # self.get_logger().info("/camera/color/image_raw", Image)
+
+        # Spin Cycle Controller
+        self.get_logger().info('Initialized node cycle control')
+        self.create_timer(1.0/cycle_freq, self._pub_results)  # 0.5 hz = 2 sec/cycle  
+
+        # Initialize Variables
         self.color = Image
         self.depth = Image
         self.seq_counter = 0
 
-    def testColorCallback(self, data_color):
-        """
-            TEMPORARY FUNCTION.
-            Used for testing the color image input ONLY.
-        """
-        self.color = data_color
+        self.get_logger().info("Vision Post-Processing Node Started")
 
-    def synchronousCallback(self, data_color, data_depth):
+    def _synchronous_callback(self, data_color, data_depth):
         """
             Called by Subscriber every time message recieved stores latest set of synchronous data.
         """
+        self.get_logger().warn("Test: Sychronous Callback Recieved data")
         self.color = data_color
         self.depth = data_depth
 
-    def pubResults(self):
+    def _pub_results(self):
+        self.get_logger().warn("Test: Cycled Publisher")
+
+    def _pub_results_real(self):
         """
-            Called every rospy.Rate(#) hz. 
+            Called by rclpy timer defined external to node. 
             Calls vision processing function using latest set of synchronous data and returns results.
             Publishes results. 
         """
         # Process Timer ~ Start
-        start = rospy.get_time()
+        start = self.get_clock.now()
         self.seq_counter+=1
 
 
@@ -75,7 +109,7 @@ class VISION_PROCESSING_CONTROLLER():
         msg = MazeData
         h = Header
 
-        h.stamp     = rospy.Time.now()
+        h.stamp     = self.get_clock.now()
         h.seq       = self.seq_counter
         h.frame_id  = self.color.header.frame_id
 
@@ -91,14 +125,19 @@ class VISION_PROCESSING_CONTROLLER():
         msg.path = found_path
 
         # Process Timer ~ End
-        rospy.loginfo("Vision Post-Processer took: " + str(rospy.get_time() - start) + " seconds.")
+        self.get_logger.info("Vision Post-Processer took: " + str(self.get_clock.now() - start) + " seconds.")
 
 
         ## Publish message
-        self.publish_results.publish(msg)
+        # self._pub_maze_data.publish(msg)
 
 
-def main():
+
+##########
+## Main ##
+##########
+
+def main(args=None):
     """
         Initialize ROS node and set publishing rate.
         Setup publisher & subscriber connections.
@@ -107,33 +146,20 @@ def main():
         Publish to custom ROS message. 
     """
 
-    rospy.init_node('vision_processing', anonymous=False)
-    rate = rospy.Rate(0.5) # 1hz = 1 cycle/sec
-    rospy.loginfo("Vision Post-Processing Node Started")
+    rclpy.init(args=args)
 
-    pub         = rospy.Publisher("MazeData", MazeData, queue_size=5)
-    sub_color   = message_filters.Subscriber("/camera/color/image_raw", Image)
-    sub_depth   = message_filters.Subscriber("/camera/aligned_depth_to_color/image_raw", Image)
+    # Init Node & Spin
+    vp = VisionProcessingControl()
+    rclpy.spin(vp)
 
-    vp = VISION_PROCESSING_CONTROLLER(pub)
-
-    # Exact Time Sync required. Consider using message_filters.ApproximateTimeSynchronizer in future
-    ts = message_filters.TimeSynchronizer([sub_color, sub_depth], queue_size=10)
-    ts.registerCallback(vp.synchronousCallback)
-
-    rospy.loginfo("Waiting for first message from camera...")
-    rospy.wait_for_message("/camera/color/image_raw", Image)
-
-    while not rospy.is_shutdown():
-        vp.pubResults()
-        rate.sleep()
+    # Cleanup
+    vp.destroy_node()
+    rclpy.shutdown()
 
 
 if __name__ == '__main__':
     try:
         main()
-    except rospy.ROSInterruptException:
-        exit()
     except KeyboardInterrupt:
         exit()
 
