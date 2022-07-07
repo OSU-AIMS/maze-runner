@@ -11,7 +11,7 @@ import numpy as np
 
 
 #### TOOLS ####
-class CONTEXTUALIZE_D3D_FEATURES(object):
+class CONTEXTUALIZE_D3D_FEATURES():
     """
     Post-Processor for Dream3D Images
     """
@@ -48,7 +48,7 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         """
 
         import csv
-        import rospy
+        import rclpy
         import numpy as np
 
         # Read in Relevant Feature Values from Dream3D Produced FeatureData.csv
@@ -72,7 +72,7 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
                         centroid[1] = float(row_value["Centroids_1"])
                         centroid[2] = float(row_value["Centroids_2"])  # not currently using 'Z-axis' but including for completeness.
 
-                rospy.logdebug('Found largest <' + str(colorName) + '> pixel group with <' + str(largest_volume) + '> elements.')
+                # print('Found largest <' + str(colorName) + '> pixel group with <' + str(largest_volume) + '> elements.')
 
             # Add Centroid Information to Dictionary
             self.dots[colorName] = {}
@@ -86,7 +86,7 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         :param maze_size_meters: Tuple of length 2. <distance from green-red dot, distance from green-blue dots>
         :return: scale
         """
-        import rospy
+        # import rospy
         import numpy as np
 
         side_gr = np.subtract(dots[self.red]['centroid'],    dots[self.green]['centroid'])
@@ -99,7 +99,7 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         scale_gb = maze_size_meters[1] / side_gb_length
 
         scale = np.average([scale_gr,scale_gb])
-        rospy.logdebug('DEBUG: Found maze real/px scale = ' + str(scale)) #DEBUG
+        # print('DEBUG: Found maze real/px scale = ' + str(scale)) #DEBUG
 
         return scale
 
@@ -109,7 +109,7 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         :param dots: Input Dictionary with three dot keys.
         :return rot_matrix: 3x3 Rotation Matrix.
         """
-        import rospy
+        # import rospy
 
         # Convention:   Right-Hand-Rule
         #   Origin  :   @ GREEN
@@ -131,7 +131,7 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
             axis_z = np.cross(axis_x,axis_y)
             axis_z = axis_z / np.linalg.norm(axis_z,2)
         else:
-            rospy.loginfo("X & Y axis insufficiently square. Failed to assemble rotation matrix.")
+            print("X & Y axis insufficiently square. Failed to assemble rotation matrix.")
             return None
     
         # Package into Rotation Matrix
@@ -146,7 +146,7 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         :param dots: Input Dictionary with three dot keys.
         :return rot_matrix: 3x3 Rotation Matrix.
         """
-        import rospy
+        # import rospy
         import numpy as np
 
         # Convention:   Right-Hand-Rule
@@ -185,7 +185,7 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
 
         import cv2
         import numpy as np
-        import rospy
+        # import rospy
 
         # Check Input
         assert rotMatrix.shape == (3, 3), "Assert: Rotation Matrix must be size (3,3)."
@@ -228,7 +228,7 @@ class CONTEXTUALIZE_D3D_FEATURES(object):
         # Rotate Image about Center of Maze
         counterRotate = np.array([[0,-1],[1,0]]) * np.linalg.inv(rotMatrix)[:-1,:-1]
         rotAngle2D = np.arctan2(counterRotate[0,0], counterRotate[1, 0])
-        rospy.logdebug("Z-Axis Angle Rotation Correction: " + str(int(np.degrees(rotAngle2D))) + " degrees")
+        # print("Z-Axis Angle Rotation Correction: " + str(int(np.degrees(rotAngle2D))) + " degrees")
 
         counterTransform = cv2.getRotationMatrix2D(center, np.degrees(rotAngle2D), scale=1.0)
         img_rotated = cv2.warpAffine(img_mask, counterTransform, img_mask.shape[1::-1], flags=cv2.INTER_NEAREST)

@@ -3,15 +3,25 @@
 # Support file for node: vision_processing
 # 
 
-def cleanMaurerPath(maurer_image_filepath):
+import os
+import cv2
+import numpy as np
+
+import subprocess
+from ament_index_python.packages import get_package_prefix
+
+
+###################
+## Class Methods ##
+###################
+
+def cleanMaurerPath(self, maurer_image_filepath) -> str:
     """
     Call Dream3D Maurer Filter Pipeline. Post-process generate image.
 
     :param maurer_image_filepath: Absolute file path to the D3D Maurer filtered maze
     :return: Saves new Image (maze_maurer_path.tiff)
     """
-    import cv2
-    import numpy as np
 
     # Load Maurer Filtered Image
     img = cv2.imread(maurer_image_filepath, 0)
@@ -57,7 +67,7 @@ def cleanMaurerPath(maurer_image_filepath):
 
 
 
-def callPathSolver(filepath_maurer_path):
+def callPathSolver(self, filepath_maurer_path) -> tuple:
     """
     Wapper around Python Maze Solver script.
 
@@ -66,21 +76,12 @@ def callPathSolver(filepath_maurer_path):
     """
     #todo: using this as a wrapper. In future, covert solver to a python class and import
 
-    import os
-    import subprocess
-    import rospy
-    import rospkg
-
     # Directories and Filepaths
-    rospack         = rospkg.RosPack()
-    dir_pkg         = rospack.get_path('maze_runner')
-    dir_wksp        = os.path.join(dir_pkg, 'mzrun_ws')
-    dir_log         = dir_wksp                          #os.environ.get('ROS_LOG_DIR')
-    solver          = os.path.join(dir_pkg, 'include/mazesolving/solve.py')
-    output_filename = os.path.join(dir_wksp, 'path_solved')
+    solver          = os.path.join(self.dir_pkg, 'include/mazesolving/solve.py')
+    output_filename = os.path.join(self.dir_wksp, 'path_solved')
 
     # Logs
-    solver_output_path = os.path.join(dir_log, 'log_pathSolver.txt')
+    solver_output_path = os.path.join(self.dir_log, 'log_pathSolver.txt')
     solver_output = open(solver_output_path, 'w') # Workaround to supress output.
 
     # Run Solver

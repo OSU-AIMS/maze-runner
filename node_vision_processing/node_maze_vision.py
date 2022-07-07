@@ -15,10 +15,11 @@
 
 import rclpy
 from rclpy.node import Node
+from maze_vision import MazeVision
+
 
 import message_filters
 
-# import node_vision_support
 
 from maze_runner.msg import MazeData
 from std_msgs.msg import Header
@@ -35,13 +36,18 @@ from cv_bridge import CvBridge, CvBridgeError
 ## Class Controller ##
 ######################
 
-class VisionProcessingControl(Node):
+class VisionProcessingControl(Node, MazeVision):
+    '''
+        1 - Initialize ROS node and set publishing rate.
+        2 - Setup publisher & subscriber connections.
+        3 - Using `message_filters` package to time synchronize data recieved from camera.
+        4 - Process data recieved.
+        5 - Publish to custom ROS message. 
+        
+        cycle_freq float: Vision processing cycle frequency in Hz. Defaults to 0.5
     '''
 
-    cycle_freq float: Vision processing cycle frequency in Hz. Defaults to 0.5
-    '''
-
-    def __init__(self, cycle_freq=0.5):
+    def __init__(self, cycle_freq=0.5) -> None:
 
         # Setup Node
         super().__init__('vision_processing')
@@ -69,7 +75,7 @@ class VisionProcessingControl(Node):
 
         self.get_logger().info("Vision Post-Processing Node Started")
 
-    def _synchronous_callback(self, data_color, data_depth):
+    def _synchronous_callback(self, data_color, data_depth) -> None:
         """
             Called by Subscriber every time message recieved stores latest set of synchronous data.
         """
@@ -77,10 +83,10 @@ class VisionProcessingControl(Node):
         self.color = data_color
         self.depth = data_depth
 
-    def _pub_results(self):
+    def _pub_results(self) -> None:
         self.get_logger().warn("Test: Cycled Publisher")
 
-    def _pub_results_real(self):
+    def _pub_results_real(self) -> None:
         """
             Called by rclpy timer defined external to node. 
             Calls vision processing function using latest set of synchronous data and returns results.
@@ -98,7 +104,7 @@ class VisionProcessingControl(Node):
         img_color = bridge.imgmsg_to_cv2(self.color, "bgr8")
         img_depth = bridge.imgmsg_to_cv2(self.depth, "passthrough")
 
-        feat = node_vision_support.VISION_PROCESSOR(img_color, img_depth)
+        feat = self.vision_runner(img_color, img_depth)
 
 
         # TODO: post-process pose array for path
@@ -138,13 +144,6 @@ class VisionProcessingControl(Node):
 ##########
 
 def main(args=None):
-    """
-        Initialize ROS node and set publishing rate.
-        Setup publisher & subscriber connections.
-        Using `message_filters` package to time synchronize data recieved from camera.
-        Process data recieved.
-        Publish to custom ROS message. 
-    """
 
     rclpy.init(args=args)
 

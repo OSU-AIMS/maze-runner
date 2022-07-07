@@ -48,7 +48,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 #############
 
 # Install Python Modules (must contain an __init__.py file)
-# ament_python_install_package(${PROJECT_NAME})
+ament_python_install_package("maze_vision")
 
 # Install Misc ROS Elements
 install(
@@ -56,9 +56,15 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
+# Install Resources
+install(
+  DIRECTORY dream3d_pipelines
+  DESTINATION share/${PROJECT_NAME}
+)
+
 # Install Python executables
 install(
-  PROGRAMS node_vision_processing/node_vision.py
+  PROGRAMS node_vision_processing/node_maze_vision.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

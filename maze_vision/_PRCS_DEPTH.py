@@ -3,17 +3,17 @@
 # Support file for node: vision_processing
 # 
 
-#### IMPORTS ####
-import csv
 import cv2
-import os
 import numpy as np
 
 
-#### TOOLS ####
-class PRCS_DEPTH_MAP(object):
+###################
+## Class Methods ##
+###################
 
-    def __init__(self, depth_map):
+class PRCS_DEPTH_MAP():
+
+    def __init__(self, depth_map) -> None:
         """Post-Processor for Depth Images
         
         Input Parameters:
@@ -24,7 +24,6 @@ class PRCS_DEPTH_MAP(object):
         """
 
         self.depth_map_smoothed = self.smoothDepthMap(depth_map)
-
 
 
     def smoothDepthMap(self, depth_map):
@@ -57,15 +56,6 @@ class PRCS_DEPTH_MAP(object):
         cv2.imwrite('mzrun_ws/dmap_blurred.tiff', img_blur)
         # cv2.imwrite('mzrun_ws/dmap_gauss.tiff', img_gauss)
         
-
         # cv2.waitKey(0)
 
-
         return img_blur
-
-
-
-
-# test_map = cv2.imread('mzrun_ws/depth.tiff', -1)
-# test     = PRCS_DEPTH_MAP(test_map)
-
