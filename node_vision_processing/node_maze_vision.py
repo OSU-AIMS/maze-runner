@@ -17,13 +17,14 @@ import rclpy
 from rclpy.node import Node
 from maze_vision import MazeVision
 
+import numpy as np
 
 import message_filters
-
 
 from maze_runner.msg import MazeData
 from std_msgs.msg import Header
 from sensor_msgs.msg import Image
+from sensor_msgs.msg import CameraInfo
 from geometry_msgs.msg import Quaternion
 from geometry_msgs.msg import Pose2D
 from geometry_msgs.msg import Point
@@ -36,7 +37,7 @@ from cv_bridge import CvBridge, CvBridgeError
 ## Class Controller ##
 ######################
 
-class VisionProcessingControl(Node, MazeVision):
+class VisionProcessingControl(Node):
     '''
         1 - Initialize ROS node and set publishing rate.
         2 - Setup publisher & subscriber connections.
@@ -52,12 +53,12 @@ class VisionProcessingControl(Node, MazeVision):
         # Setup Node
         super().__init__('vision_processing')
 
-        # Setup Pub/Sub
+        # Setup Pub/Sub & TimeSychronizer
         self.pub_maze_data = self.create_publisher(MazeData, "MazeData", qos_profile = 5)
+        self.sub_intrinsics  = self.create_subscription(CameraInfo, "/camera/color/camera_info", self._callback_intrinsics, 2)
         sub_color = message_filters.Subscriber(self, Image, "/camera/color/image_raw")
         sub_depth = message_filters.Subscriber(self, Image, "/camera/depth/image_rect_raw")
 
-        # Setup TimeSychronizer
         self.ts = message_filters.TimeSynchronizer([sub_color, sub_depth], queue_size=10)
         self.ts.registerCallback(self._synchronous_callback)
 
@@ -69,10 +70,15 @@ class VisionProcessingControl(Node, MazeVision):
         self.create_timer(1.0/cycle_freq, self._pub_results)  # 0.5 hz = 2 sec/cycle  
 
         # Initialize Variables
+        self.camera_info = np.zeros((3,4))
         self.color = Image
         self.depth = Image
         self.seq_counter = 0
 
+        # Initialize Vision Processing Tool
+        self.mviz = MazeVision
+
+        # Report
         self.get_logger().info("Vision Post-Processing Node Started")
 
     def _synchronous_callback(self, data_color, data_depth) -> None:
@@ -82,6 +88,9 @@ class VisionProcessingControl(Node, MazeVision):
         self.get_logger().warn("Test: Sychronous Callback Recieved data")
         self.color = data_color
         self.depth = data_depth
+
+    def _callback_intrinsics(self, data) -> None:
+        self.camera_info = data
 
     def _pub_results(self) -> None:
         self.get_logger().warn("Test: Cycled Publisher")
@@ -104,7 +113,7 @@ class VisionProcessingControl(Node, MazeVision):
         img_color = bridge.imgmsg_to_cv2(self.color, "bgr8")
         img_depth = bridge.imgmsg_to_cv2(self.depth, "passthrough")
 
-        feat = self.vision_runner(img_color, img_depth)
+        feat = self.mviz.vision_runner(img_color, img_depth, self.camera_info)
 
 
         # TODO: post-process pose array for path

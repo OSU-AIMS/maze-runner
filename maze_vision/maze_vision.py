@@ -9,6 +9,8 @@ import cv2
 import numpy as np
 from ament_index_python.packages import get_package_prefix
 
+from sensor_msgs.msg import CameraInfo
+
 # import tf_transformations
 
 
@@ -47,7 +49,7 @@ class MazeVision():
 
 
     '''Runner'''
-    def vision_runner(self, image_color, image_depth) -> list:
+    def vision_runner(self, image_color: np.ndarray, image_depth: np.ndarray, camera_info: CameraInfo) -> list:
 
         # Reference Variables
         dir_wksp = os.path.join(get_package_prefix('maze_runner'), 'mzrun_ws')
