@@ -2,7 +2,7 @@
     "PipelineBuilder": {
         "Number_Filters": 9,
         "Version": 6,
-        "Name": "filter_maurer_path"
+        "Name": "pipeline_maurer_path"
     },
     "0": {
         "DataContainerName": "ImageDataContainer",

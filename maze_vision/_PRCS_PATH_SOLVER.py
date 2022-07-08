@@ -15,7 +15,7 @@ from ament_index_python.packages import get_package_prefix
 ## Class Methods ##
 ###################
 
-def cleanMaurerPath(self, maurer_image_filepath) -> str:
+def clean_maurer_path(self, maurer_image_filepath) -> str:
     """
     Call Dream3D Maurer Filter Pipeline. Post-process generate image.
 
@@ -67,7 +67,7 @@ def cleanMaurerPath(self, maurer_image_filepath) -> str:
 
 
 
-def callPathSolver(self, filepath_maurer_path) -> tuple:
+def call_path_solver(self, filepath_maurer_path) -> tuple:
     """
     Wapper around Python Maze Solver script.
 

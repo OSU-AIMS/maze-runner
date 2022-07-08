@@ -13,7 +13,7 @@ from ament_index_python.packages import get_package_prefix
 ## Class Methods ##
 ###################
 
-def runD3D_mazeLocators(self, fpath_image, dot_names, locator_scalar_tolerance=1000, local_debug="False") -> tuple:
+def runD3D_maze_locators(self, fpath_image, dot_names, locator_scalar_tolerance=1000, local_debug="False") -> tuple:
     """
     Processor caller for preconfigured Dream3D pipeline.
     Requires: os, subprocess, json, rospy, rospkg
@@ -23,7 +23,7 @@ def runD3D_mazeLocators(self, fpath_image, dot_names, locator_scalar_tolerance=1
     return: Centroid and Size of red, green, blue color clusters
     """
 
-    pipeline    = os.path.join(self.dir_share, 'dream3d_pipelines/filter_irs_image.json')
+    pipeline    = os.path.join(self.dir_resources, 'pipeline_rgb_fiducial.json')
 
     fpath_redDot     = os.path.join(self.dir_wksp, 'feature_' + dot_names[0] + '.csv')
     fpath_greenDot   = os.path.join(self.dir_wksp, 'feature_' + dot_names[1] + '.csv')
@@ -66,7 +66,7 @@ def runD3D_mazeLocators(self, fpath_image, dot_names, locator_scalar_tolerance=1
 
 
 
-def runD3D_maurerFilter(self, input_maze_image) -> str:
+def runD3D_maurer_filter(self, input_maze_image) -> str:
     """
     Processor caller for preconfigured Dream3D pipeline.
     Requires: os, subprocess, json, rospy, rospkg
@@ -75,11 +75,8 @@ def runD3D_maurerFilter(self, input_maze_image) -> str:
     :return output_maurer_path: Absolute file path to the Maurer Filtered maze image
     """
 
-    dir_pkg = get_package_prefix('maze_runner')
-    dir_log = os.path.join(dir_pkg, 'mzrun_ws') #os.environ.get('ROS_LOG_DIR')
-
-    pipeline = os.path.join(dir_pkg, 'dream3d_pipelines/filter_maurer_path.json')
-    output_maurer_path = os.path.join(dir_log, 'maze_maurer_path.tiff')
+    pipeline = os.path.join(self.dir_resources, 'pipeline_maurer_path.json')
+    output_maurer_path = os.path.join(self.dir_wksp, 'maze_maurer_path.tiff')
 
     # Setup Dream3D / Simple Pipeline
     with open(pipeline, 'r') as jsonFile:
@@ -91,7 +88,7 @@ def runD3D_maurerFilter(self, input_maze_image) -> str:
         json.dump(data, jsonFile, indent=4)
 
     # Run Dream3D Pipeline
-    d3d_output_path = os.path.join(dir_log, 'log_D3D_maurerPath.txt')
+    d3d_output_path = os.path.join(self.dir_log, 'log_D3D_maurerPath.txt')
     d3d_output = open(d3d_output_path, 'w')
     subprocess.call([self.exec_dream3d, "-p", pipeline], stdout=d3d_output, stderr=d3d_output)
 

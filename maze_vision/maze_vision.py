@@ -26,9 +26,10 @@ class MazeVision():
 
         # Directories and Filepaths
         self.dir_pkg     = get_package_prefix('maze_runner')
-        self.dir_wksp    = os.path.join(self.dir_pkg, 'mzrun_ws')               # active workspace during runtime. holds temporary files.
+        self.dir_wksp    = os.path.join(self.dir_pkg, 'mzrun_ws')  # active workspace during runtime. holds temporary files.
         self.dir_share   = os.path.join(self.dir_pkg, 'share', 'maze_runner')
-        self.dir_log     = self.dir_wksp                                        #os.environ.get('ROS_LOG_DIR')
+        self.dir_log     = self.dir_wksp
+        self.dir_resources = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources')
         self.exec_dream3d = "/usr/local/programs/DREAM3D/bin/PipelineRunner"
 
         # Setup Runtime Workspace
@@ -39,10 +40,10 @@ class MazeVision():
 
 
     '''Imported Methods'''
-    from _PRCS_D3D_FEATURES import CONTEXTUALIZE_D3D_FEATURES
-    from _PRCS_DEPTH import PRCS_DEPTH_MAP
-    from _PRCS_PATH_SOLVER import cleanMaurerPath, callPathSolver
-    from _RUN_D3D import runD3D_mazeLocators, runD3D_maurerFilter
+    from _FIDUCIAL_METHOD_RGB_DOTS import FIDUCIAL_METHOD_RGB_DOTS
+    from _PRCS_DEPTH import smooth_depth_map
+    from _PRCS_PATH_SOLVER import clean_maurer_path, call_path_solver
+    from _RUN_D3D import runD3D_maze_locators, runD3D_maurer_filter
 
 
     '''Runner'''
@@ -60,12 +61,12 @@ class MazeVision():
 
         # Run Pose Processor
         dot_names = ['redDot', 'greenDot', 'blueDot']
-        fpath_masked_maze, fpaths_dot_feature = self.runD3D_mazeLocators(fpath_color, dot_names)
+        fpath_masked_maze, fpaths_dot_feature = self.runD3D_maze_locators(fpath_color, dot_names)
 
 
         # Post Process Results
         maze_size = [0.18, 0.18] # Realworld Measurement (in meters)
-        features = self.CONTEXTUALIZE_D3D_FEATURES(dot_names, fpaths_dot_feature, fpath_masked_maze, maze_size)
+        features = self.FIDUCIAL_METHOD_RGB_DOTS(dot_names, fpaths_dot_feature, fpath_masked_maze, maze_size)
         input_maze_image_filepath = features.exportResults()
 
 
@@ -75,19 +76,19 @@ class MazeVision():
 
 
         # Simplify & Clean Cropped Maze Image
-        raw_filter_result       = self.runD3D_maurerFilter(input_maze_image_filepath)
-        maurer_image_filepath   = self.cleanMaurerPath(raw_filter_result)
+        raw_filter_result       = self.runD3D_maurer_filter(input_maze_image_filepath)
+        maurer_image_filepath   = self.clean_maurer_path(raw_filter_result)
 
 
         # Run Python Maze Solver on Cleaned Image
-        solved_csv_filepath, solved_image_filepath = self.callPathSolver(maurer_image_filepath)
+        solved_csv_filepath, solved_image_filepath = self.call_path_solver(maurer_image_filepath)
 
 
         # Depth
         # temporary, grab depth at origin and assume flat.
         # TODO: new method to get depth at every waypoing along path
-        depth_features = self.PRCS_DEPTH_MAP(image_depth)
-        depth_origin = depth_features.depth_map_smoothed[features.mazeCentroid[0], features.mazeCentroid[1]]
+        depth_features = self.smooth_depth_map(image_depth)
+        depth_origin = depth_features[features.mazeCentroid[0], features.mazeCentroid[1]]
 
 
         # Assemble Pose relative to camera link
