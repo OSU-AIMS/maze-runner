@@ -40,12 +40,11 @@ class MazeVision():
             print("[info] Created runtime workspace.")
         return
 
-
     '''Imported Methods'''
-    from _FIDUCIAL_METHOD_RGB_DOTS import FIDUCIAL_METHOD_RGB_DOTS
-    from _PRCS_DEPTH import smooth_depth_map
-    from _PRCS_PATH_SOLVER import clean_maurer_path, call_path_solver
-    from _RUN_D3D import runD3D_maze_locators, runD3D_maurer_filter
+    from ._FIDUCIAL_METHOD_RGB_DOTS import FIDUCIAL_METHOD_RGB_DOTS
+    from ._PRCS_DEPTH import smooth_depth_map
+    from ._PRCS_PATH_SOLVER import clean_maurer_path, call_path_solver
+    from ._RUN_D3D import runD3D_maze_locators, runD3D_maurer_filter
 
 
     '''Runner'''
@@ -61,21 +60,21 @@ class MazeVision():
         cv2.imwrite(fpath_depth, image_depth)
 
 
-        # Run Pose Processor
-        dot_names = ['redDot', 'greenDot', 'blueDot']
-        fpath_masked_maze, fpaths_dot_feature = self.runD3D_maze_locators(fpath_color, dot_names)
+        if False:
+            # Run Pose Processor
+            dot_names = ['redDot', 'greenDot', 'blueDot']
+            fpath_masked_maze, fpaths_dot_feature = self.runD3D_maze_locators(fpath_color, dot_names)
 
+            # Post Process Results
+            maze_size = [0.18, 0.18] # Realworld Measurement (in meters)
+            features = self.FIDUCIAL_METHOD_RGB_DOTS(dot_names, fpaths_dot_feature, fpath_masked_maze, maze_size)
+            input_maze_image_filepath = features.exportResults()
 
-        # Post Process Results
-        maze_size = [0.18, 0.18] # Realworld Measurement (in meters)
-        features = self.FIDUCIAL_METHOD_RGB_DOTS(dot_names, fpaths_dot_feature, fpath_masked_maze, maze_size)
-        input_maze_image_filepath = features.exportResults()
+            # Assemble 2D Pose
+            # projected_2d_pose = [x,y,theta]
+            projected_2d_pose = [features.mazeCentroid[0], features.mazeCentroid[1], features.rotAngle]
 
-
-        # Assemble 2D Pose
-        # projected_2d_pose = [x,y,theta]
-        projected_2d_pose = [features.mazeCentroid[0], features.mazeCentroid[1], features.rotAngle]
-
+        
 
         # Simplify & Clean Cropped Maze Image
         raw_filter_result       = self.runD3D_maurer_filter(input_maze_image_filepath)
@@ -117,13 +116,13 @@ class MazeVision():
 ## FOR DEVELOPMENT ONLY ##
 ##########################
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
 
-#     from maze_vision import MazeVision
+    from maze_vision import MazeVision
 
-#     c = cv2.imread('/home/buynak.9/AA_DEVL/ws_mzrun/src/maze-runner/mzrun_ws/color.tiff', 3)
-#     d = cv2.imread('/home/buynak.9/AA_DEVL/ws_mzrun/src/maze-runner/mzrun_ws/depth.tiff', -1)
+    c = cv2.imread('/home/buynak.9/AA_DEVL/ws_mzrun/src/maze-runner/mzrun_ws/color.tiff', 3)
+    d = cv2.imread('/home/buynak.9/AA_DEVL/ws_mzrun/src/maze-runner/mzrun_ws/depth.tiff', -1)
 
-#     mv = MazeVision()
-#     mv.vision_runner(c,d)
+    mv = MazeVision()
+    mv.vision_runner(c,d)
     
