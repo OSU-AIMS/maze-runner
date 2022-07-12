@@ -70,24 +70,30 @@ class FIDUCIAL_METHOD_ARUCO():
         self.last_known_markers.clear()
 
         # Parse Output
-        img_poses = img.copy()
-        detected_markers = {}
-        for i in range(len(ids)):
+        try:
+            img_poses = img.copy()
+            detected_markers = {}
+            for i in range(len(ids)):
 
-            c = corners[i][0]
-            centroid = (c[:, 0].mean(), c[:, 1].mean())
+                c = corners[i][0]
+                centroid = (c[:, 0].mean(), c[:, 1].mean())
 
-            detected_markers[ids[i][0].T] = self.Marker(ids[i][0].T, centroid, rvecs[i])
+                detected_markers[ids[i][0].T] = self.Marker(ids[i][0].T, centroid, rvecs[i])
 
-            # Debug: Draw Poses on Image
-            if self.debug: cv2.drawFrameAxes( img_poses, cameraMatrix=camera_info.k, distCoeffs=camera_info.d, rvec=rvecs[i], tvec=tvecs[i], length=0.05, thickness=5 )
+                # Debug: Draw Poses on Image
+                if self.debug: cv2.drawFrameAxes( img_poses, cameraMatrix=camera_info.k, distCoeffs=camera_info.d, rvec=rvecs[i], tvec=tvecs[i], length=0.05, thickness=5 )
 
-        # Debug
-        self._img_poses_annotated = img_poses
-        if self.debug: cv2.imwrite('debug_step1_poses_annotated.tiff', img_poses)
+            # Debug
+            self._img_poses_annotated = img_poses
+            if self.debug: cv2.imwrite('debug_step1_poses_annotated.tiff', img_poses)
 
-        # Return detected markers
-        self.last_known_markers = detected_markers
+            # Return detected markers
+            self.last_known_markers = detected_markers
+            return 0
+
+        except:
+            print("Something went wrong parsing detected Fiducial Markers. Were any markers detected?")
+            return 1
 
     def get_board_2D_rotmat(self) -> np.ndarray:
         '''
@@ -147,6 +153,9 @@ class FIDUCIAL_METHOD_ARUCO():
         assert self.board_2d_rotmatrix.shape == (3, 3), "Assert: Rotation Matrix must be size (3,3)."
         assert np.isnan(self.board_2d_rotmatrix).any() == False, "Assert: Rotation Matrix must not contan NaN values."
       
+        # Convert to Grayscale
+        img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
         # Find Mask Corners
         c_topleft  = self.last_known_markers[1].centroid
         c_topright = self.last_known_markers[2].centroid
@@ -155,13 +164,13 @@ class FIDUCIAL_METHOD_ARUCO():
         print(" > INFO: Four Corners Identified @ :", c_topleft, c_topright, c_botleft, c_botright)
 
         # Build Mask
-        height    = img.shape[0]
-        width     = img.shape[1]
+        height    = img_gray.shape[0]
+        width     = img_gray.shape[1]
         frame     = np.zeros((height, width), dtype=np.uint8)
         centroids = np.stack((c_topleft, c_topright, c_botright, c_botleft), axis=0)
         mask = cv2.fillPoly(frame, pts=[centroids.astype('uint64')], color=(255))
 
-        img_mask = cv2.bitwise_and(img, img, mask = mask)
+        img_mask = cv2.bitwise_and(img_gray, img_gray, mask = mask)
 
         # Export Masked Image
         if self.debug: cv2.imwrite('debug_step2_masked.tiff', img_mask)
@@ -211,4 +220,4 @@ if __name__ == '__main__':
     fma.detect_markers(c, dummy_cam_info)
 
     fma.get_board_2D_rotmat()
-    fma._maze_mask()
+    fma._maze_mask(c)

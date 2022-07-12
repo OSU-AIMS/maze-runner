@@ -4,9 +4,10 @@
 # 
 
 import os
+import cv2
+import numpy as np
 import subprocess
 import json
-from ament_index_python.packages import get_package_prefix
 
 
 ###################
@@ -66,23 +67,28 @@ def runD3D_maze_locators(self, fpath_image, dot_names, locator_scalar_tolerance=
 
 
 
-def runD3D_maurer_filter(self, input_maze_image) -> str:
+def runD3D_maurer_filter(self, input_maze_image: np.ndarray) -> tuple:
     """
     Processor caller for preconfigured Dream3D pipeline.
     Requires: os, subprocess, json, rospy, rospkg
 
-    :param input_maze_image:    Absolute file path to the cropped maze
+    :param input_maze_image:    Cropped input maze image.
     :return output_maurer_path: Absolute file path to the Maurer Filtered maze image
     """
 
+    # Save Image to file
+    fpath_input = os.path.join(self.dir_wksp, 'maze_masked.tiff')
+    cv2.imwrite(fpath_input, input_maze_image)
+
+    # Setup Dream3D Pipeline
     pipeline = os.path.join(self.dir_resources, 'pipeline_maurer_path.json')
-    output_maurer_path = os.path.join(self.dir_wksp, 'maze_maurer_path.tiff')
+    fpath_output = os.path.join(self.dir_wksp, 'maze_maurer_path.tiff')
 
     # Setup Dream3D / Simple Pipeline
     with open(pipeline, 'r') as jsonFile:
         data = json.load(jsonFile)
-        data["0"]["FileName"] = input_maze_image
-        data["7"]["FileName"] = output_maurer_path
+        data["0"]["FileName"] = fpath_input
+        data["7"]["FileName"] = fpath_output
 
     with open(pipeline, 'w') as jsonFile:
         json.dump(data, jsonFile, indent=4)
@@ -92,4 +98,7 @@ def runD3D_maurer_filter(self, input_maze_image) -> str:
     d3d_output = open(d3d_output_path, 'w')
     subprocess.call([self.exec_dream3d, "-p", pipeline], stdout=d3d_output, stderr=d3d_output)
 
-    return output_maurer_path
+    # Read in Img Result
+    output_img = cv2.imread(fpath_output)
+
+    return output_img, fpath_output

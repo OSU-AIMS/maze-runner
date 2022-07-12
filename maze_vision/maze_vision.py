@@ -41,10 +41,11 @@ class MazeVision():
         return
 
     '''Imported Methods'''
-    from ._FIDUCIAL_METHOD_RGB_DOTS import FIDUCIAL_METHOD_RGB_DOTS
-    from ._PRCS_DEPTH import smooth_depth_map
-    from ._PRCS_PATH_SOLVER import clean_maurer_path, call_path_solver
-    from ._RUN_D3D import runD3D_maze_locators, runD3D_maurer_filter
+    from _FIDUCIAL_METHOD_ARUCO import FIDUCIAL_METHOD_ARUCO
+    from _FIDUCIAL_METHOD_RGB_DOTS import FIDUCIAL_METHOD_RGB_DOTS
+    from _PRCS_DEPTH import smooth_depth_map
+    from _PRCS_PATH_SOLVER import clean_maurer_path, call_path_solver
+    from _RUN_D3D import runD3D_maze_locators, runD3D_maurer_filter
 
 
     '''Runner'''
@@ -60,6 +61,7 @@ class MazeVision():
         cv2.imwrite(fpath_depth, image_depth)
 
 
+        ## Fiducial Method: RGB DOTS
         if False:
             # Run Pose Processor
             dot_names = ['redDot', 'greenDot', 'blueDot']
@@ -75,14 +77,28 @@ class MazeVision():
             projected_2d_pose = [features.mazeCentroid[0], features.mazeCentroid[1], features.rotAngle]
 
         
+        ## Fiducial Method: ARUCO MARKERS
+        if True:
+            fma = self.FIDUCIAL_METHOD_ARUCO(marker_length = 0.02, set_debug=True)
+
+            fma.detect_markers(image_color, camera_info=camera_info)
+            fma.get_board_2D_rotmat()
+            img_cropped_maze = fma._maze_mask(image_color)
+
+
+        # Clean Masked Maze Surface
+        ret, thresh = cv2.threshold(img_cropped_maze, 100, 255, cv2.THRESH_BINARY)
+
+        kernel = np.ones((10,10), np.uint8)
+        img_cropped_maze_binary = cv2.erode(thresh, kernel)
 
         # Simplify & Clean Cropped Maze Image
-        raw_filter_result       = self.runD3D_maurer_filter(input_maze_image_filepath)
-        maurer_image_filepath   = self.clean_maurer_path(raw_filter_result)
+        result_img, result_fpath = self.runD3D_maurer_filter(img_cropped_maze_binary)
+        maurer_image = self.clean_maurer_path(result_img)
 
 
         # Run Python Maze Solver on Cleaned Image
-        solved_csv_filepath, solved_image_filepath = self.call_path_solver(maurer_image_filepath)
+        solved_csv_filepath, solved_image_filepath = self.call_path_solver(maurer_image)
 
 
         # Depth
@@ -120,9 +136,13 @@ if __name__ == '__main__':
 
     from maze_vision import MazeVision
 
-    c = cv2.imread('/home/buynak.9/AA_DEVL/ws_mzrun/src/maze-runner/mzrun_ws/color.tiff', 3)
+    c = cv2.imread('/home/buynak.9/AA_DEVL/ws_mzrun/src/maze-runner/mzrun_ws/test_real2.png', 3)
     d = cv2.imread('/home/buynak.9/AA_DEVL/ws_mzrun/src/maze-runner/mzrun_ws/depth.tiff', -1)
 
+    dummy_cam_info = CameraInfo
+    dummy_cam_info.k = np.array([645.2972412109375, 0.0, 638.7476806640625, 0.0, 643.7479248046875, 356.8504943847656, 0.0, 0.0, 1.0]).reshape((3,3))
+    dummy_cam_info.d = np.array([-0.05540444329380989, 0.0635504275560379, -0.0007356749847531319, 0.00030453770887106657, -0.020576464012265205])
+
     mv = MazeVision()
-    mv.vision_runner(c,d)
+    mv.vision_runner(c,d,dummy_cam_info)
     
