@@ -49,6 +49,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 # Install Python Modules (must contain an __init__.py file)
 ament_python_install_package("maze_vision")
+ament_python_install_package("maze_solver")
 
 # Install Misc ROS Elements
 install(
