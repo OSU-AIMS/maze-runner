@@ -64,13 +64,16 @@ class FIDUCIAL_METHOD_ARUCO():
 
         # Find Markers & Pose
         (corners, ids, rejected) = cv2.aruco.detectMarkers(img_gray, self.aruco_dict, parameters = self.aruco_param)
-        (rvecs, tvecs, points) = cv2.aruco.estimatePoseSingleMarkers( corners, markerLength=self.marker_length, cameraMatrix=camera_info.k, distCoeffs=camera_info.d )
 
         # Clear previously found markers
         self.last_known_markers.clear()
 
         # Parse Output
-        try:
+        if len(ids) > 0:
+            # Calculate Poses of Detected Markers
+            (rvecs, tvecs, points) = cv2.aruco.estimatePoseSingleMarkers( corners, markerLength=self.marker_length, cameraMatrix=np.asarray(camera_info.k).reshape((3,3)), distCoeffs=np.asarray(camera_info.d) )
+
+            # Process Identified Markers
             img_poses = img.copy()
             detected_markers = {}
             for i in range(len(ids)):
@@ -81,7 +84,7 @@ class FIDUCIAL_METHOD_ARUCO():
                 detected_markers[ids[i][0].T] = self.Marker(ids[i][0].T, centroid, rvecs[i])
 
                 # Debug: Draw Poses on Image
-                if self.debug: cv2.drawFrameAxes( img_poses, cameraMatrix=camera_info.k, distCoeffs=camera_info.d, rvec=rvecs[i], tvec=tvecs[i], length=0.05, thickness=5 )
+                if self.debug: cv2.drawFrameAxes( img_poses, cameraMatrix=np.asarray(camera_info.k).reshape((3,3)), distCoeffs=np.asarray(camera_info.d), rvec=rvecs[i], tvec=tvecs[i], length=0.05, thickness=5 )
 
             # Debug
             self._img_poses_annotated = img_poses
@@ -90,8 +93,7 @@ class FIDUCIAL_METHOD_ARUCO():
             # Return detected markers
             self.last_known_markers = detected_markers
             return 0
-
-        except:
+        else:
             print("Something went wrong parsing detected Fiducial Markers. Were any markers detected?")
             return 1
 

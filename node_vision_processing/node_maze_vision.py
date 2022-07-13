@@ -54,29 +54,28 @@ class VisionProcessingControl(Node):
         super().__init__('vision_processing')
 
         # Setup Pub/Sub & TimeSychronizer
-        self.pub_maze_data = self.create_publisher(MazeData, "MazeData", qos_profile = 5)
-        self.sub_intrinsics  = self.create_subscription(CameraInfo, "/camera/color/camera_info", self._callback_intrinsics, 2)
-        sub_color = message_filters.Subscriber(self, Image, "/camera/color/image_raw")
-        sub_depth = message_filters.Subscriber(self, Image, "/camera/depth/image_rect_raw")
+        self.pub_maze_data = self.create_publisher(MazeData, "maze_data", qos_profile = 5)
+        self.pub_solved_maze = self.create_publisher(Image, 'solved_maze', qos_profile = 3)
+        self.sub_intrinsics  = self.create_subscription(CameraInfo, "/rs1/color/camera_info", self._callback_intrinsics, 2)
+        sub_color = message_filters.Subscriber(self, Image, "/rs1/color/image_raw")
+        sub_depth = message_filters.Subscriber(self, Image, "/rs1/depth/image_rect_raw")
 
         self.ts = message_filters.TimeSynchronizer([sub_color, sub_depth], queue_size=10)
         self.ts.registerCallback(self._synchronous_callback)
 
-        # self.get_logger().info("Waiting for first message from camera...")
-        # self.get_logger().info("/camera/color/image_raw", Image)
-
         # Spin Cycle Controller
         self.get_logger().info('Initialized node cycle control')
-        self.create_timer(1.0/cycle_freq, self._pub_results)  # 0.5 hz = 2 sec/cycle  
+        self.create_timer(1.0/cycle_freq, self._pub_results_real)  # 0.5 hz = 2 sec/cycle  
 
         # Initialize Variables
-        self.camera_info = np.zeros((3,4))
-        self.color = Image
-        self.depth = Image
+        self.camera_info = None
+        self.color = None
+        self.depth = None
         self.seq_counter = 0
 
         # Initialize Vision Processing Tool
-        self.mviz = MazeVision
+        self.mviz = MazeVision()
+        self.cvbridge = CvBridge()
 
         # Report
         self.get_logger().info("Vision Post-Processing Node Started")
@@ -85,7 +84,7 @@ class VisionProcessingControl(Node):
         """
             Called by Subscriber every time message recieved stores latest set of synchronous data.
         """
-        self.get_logger().warn("Test: Sychronous Callback Recieved data")
+        self.get_logger().debug("Test: Sychronous Callback Recieved data")
         self.color = data_color
         self.depth = data_depth
 
@@ -101,51 +100,71 @@ class VisionProcessingControl(Node):
             Calls vision processing function using latest set of synchronous data and returns results.
             Publishes results. 
         """
-        # Process Timer ~ Start
-        start = self.get_clock.now()
-        self.seq_counter+=1
+
+        if self.color == None or self.depth == None or self.camera_info == None:
+            self.get_logger().info("Waiting for first message from camera...")
+            pass
+        else:
+            # Process Timer ~ Start
+            start = self.get_clock().now()
+            self.seq_counter+=1
 
 
-        # Process vision
-        # Process Input Data from ROS message to .Mat object
-        # TODO: add check to ensure only recent messages are being processed
-        bridge = CvBridge()
-        img_color = bridge.imgmsg_to_cv2(self.color, "bgr8")
-        img_depth = bridge.imgmsg_to_cv2(self.depth, "passthrough")
+            # Process vision
+            # Process Input Data from ROS message to .Mat object
+            # TODO: add check to ensure only recent messages are being processed
+            c = self.cvbridge.imgmsg_to_cv2(self.color)
+            d = self.cvbridge.imgmsg_to_cv2(self.depth, "passthrough")
 
-        feat = self.mviz.vision_runner(img_color, img_depth, self.camera_info)
+            # Runner
+            runner_feedback = self.mviz.vision_runner(image_color=c, image_depth=d, camera_info=self.camera_info)
 
+            if runner_feedback == 1:
+                self.get_logger().warn("Maze Vision unable to process inputs.")
+            else:
+                vision_data, solved_maze_img = runner_feedback
 
-        # TODO: post-process pose array for path
-        # found_path = feat[3]
-        found_path =[Pose]
+                import cv2
+                cv2.imshow('test', solved_maze_img)
+                cv2.waitKey()
 
-        ## Build message
-        msg = MazeData
-        h = Header
+                # TODO: post-process pose array for path
+                # found_path = vision_data[3]
+                found_path =[Pose]
 
-        h.stamp     = self.get_clock.now()
-        h.seq       = self.seq_counter
-        h.frame_id  = self.color.header.frame_id
+                ## Build message
+                h = Header
 
-        msg.header           = h
-        msg.scale            = feat[0]                                          # TODO: Assertion on data type
-        msg.projected_origin = Pose2D(feat[1][0], feat[1][1], feat[1][2])
+                h.stamp     = self.get_clock().now()
+                h.seq       = self.seq_counter
+                h.frame_id  = self.color.header.frame_id
 
-        p = Pose
-        p.position    = Point(feat[2][0], feat[2][1], feat[2][2])
-        p.orientation = Quaternion(feat[2][3], feat[2][4], feat[2][5], feat[2][6])
-        msg.pose_relative_2_camera = p
+                # Build Maze Feature Data Message
+                msg = MazeData
+                msg.header           = h
+                # msg.scale            = vision_data[0] # TODO: Assertion on data type
+                # msg.projected_origin = Pose2D(vision_data[1][0], vision_data[1][1], vision_data[1][2])
 
-        msg.path = found_path
+                # p = Pose
+                # p.position    = Point(vision_data[2][0], vision_data[2][1], vision_data[2][2])
+                # p.orientation = Quaternion(vision_data[2][3], vision_data[2][4], vision_data[2][5], vision_data[2][6])
+                # msg.pose_relative_2_camera = p
 
-        # Process Timer ~ End
-        self.get_logger.info("Vision Post-Processer took: " + str(self.get_clock.now() - start) + " seconds.")
+                # msg.path = found_path
 
+                # Build Solved Maze Image Message
+                msg_img = Image
+                msg_img.header = h
+                msg_img.height = solved_maze_img.shape[0] 
+                msg_img.width = solved_maze_img.shape[1]
+                msg_img.data = solved_maze_img.astype('uint8')
 
-        ## Publish message
-        # self._pub_maze_data.publish(msg)
+                ## Publish message
+                # self.pub_maze_data.publish(msg)
+                self.pub_solved_maze.publish(msg_img)
 
+            # Process Timer ~ End
+            self.get_logger().info("Vision Post-Processer took: " + str(self.get_clock().now() - start) + " seconds.")
 
 
 ##########

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Tier1 Launch File: Intialize System -->
+
+<launch>
+
+    <!-- Configureable Launch Parameters -->
+    <arg name="robot"       default="gp7" />
+    <arg name="sim_robot"   default="true" />
+    <arg name="sim_vision"  default="false" />
+
+
+    <!-- Robot Parameters -->
+    <arg name="eef_vision" default="r2_eef_camera" />
+    <arg name="eef_marker" default="r2_eef_pointer" />
+
+    <arg name="moveit_vel" default="0.2" />
+    <arg name="moveit_acc" default="0.2" />
+
+
+    <!-- Set into ROS Parameter Server -->
+    <!--
+    <param name="robot" value="$(var robot)" type="str" />
+    <param name="eef_vision" value="$(var eef_vision)" type="str" />
+    <param name="eef_marker" value="$(var eef_marker)" type="str" />
+
+    <param name="moveit_vel" value="$(var moveit_vel)" type="double" />
+    <param name="moveit_acc" value="$(var moveit_acc)" type="double" /> 
+    -->
+
+
+    <!-- SubSystem Setup: Robot Support -->
+<!--     <group if="$(eval var('robot')=='gp7')">
+        <include file="$(find-pkg-share motoman_gp7_moveit_config)/launch/moveit_planning_execution.launch" >
+            <arg name="sim" let="$(var sim_robot)" />
+            <arg name="controller" unless="$(var sim_robot)" let="yrc1000" />
+            <arg name="robot_ip" unless="$(var sim_robot)" />
+        </include>
+    </group> -->
+
+
+    <!--  SubSystem Setup: Vision Support -->
+    <group if="$(var sim_vision)" >
+        <!-- Static Image Publisher to stand in for real camera -->
+        <node pkg="image_publisher" exec="image_publisher_node" name="color" namespace="camera"
+            args="$(find-pkg-share maze_runner)/sample_content/vision_processing/maze_labFloor_far.jpg" >
+            <param name="flip_horizontal"   value="false" />
+            <param name="flip_vertical"     value="false" />
+            <param name="frame_id"          value="camera_link" />
+            <param name="publish_rate"      value="15.0" />
+        </node>
+    </group>
+    <group unless="$(var sim_vision)" >
+        <include file="$(find-pkg-share realsense2_camera)/launch/rs_launch.py" >
+            <arg name="camera_name"         value="rs1" />
+            <arg name="initial_reset"       value="true" />
+
+            <arg name="enable_color"        value="true" />
+            <arg name="rgb_camera.profile"  value="640,480,15" />
+
+            <arg name="enable_depth"        value="true" />
+            <arg name="depth_module.profile" value="640,480,15" />
+
+            <arg name="enable_sync"         value="true" />
+            <arg name="align_depth.enable"  value="true" />
+            <arg name="clip_distance"       value="3.0" />
+            <arg name="pointcloud.enable"   value="false" />
+            
+        </include>
+    </group>
+
+<!--     <node pkg="maze_runner" exec="node_vision.py" name="vision_processing" 
+        respawn="true" /> -->
+
+
+</launch>
