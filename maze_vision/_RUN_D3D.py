@@ -99,6 +99,6 @@ def runD3D_maurer_filter(self, input_maze_image: np.ndarray) -> tuple:
     subprocess.call([self.exec_dream3d, "-p", pipeline], stdout=d3d_output, stderr=d3d_output)
 
     # Read in Img Result
-    output_img = cv2.imread(fpath_output)
+    output_img = cv2.imread(fpath_output, 0)
 
     return output_img, fpath_output

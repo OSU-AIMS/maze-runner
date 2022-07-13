@@ -1,9 +1,15 @@
+import numpy as np
+
 class Maze:
     class Node:
         def __init__(self, position):
             self.Position = position
             self.Neighbours = [None, None, None, None]
             #self.Weights = [0, 0, 0, 0]
+
+        def __lt__(self, other):
+            return True
+
 
     def __init__(self, im):
 
