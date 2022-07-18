@@ -26,7 +26,8 @@ class MazeVision():
     '''
 
     '''Setup'''
-    def __init__(self) -> None:
+    def __init__(self, set_debug=False) -> None:
+        self.debug = set_debug
 
         # Directories and Filepaths
         self.dir_pkg     = get_package_prefix('maze_runner')
@@ -35,6 +36,9 @@ class MazeVision():
         self.dir_log     = self.dir_wksp
         self.dir_resources = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources')
         self.exec_dream3d = "/usr/local/programs/DREAM3D/bin/PipelineRunner"
+
+        # Fiducial Method
+        self.fma = self.FIDUCIAL_METHOD_ARUCO(marker_length = 0.02, set_debug=self.debug)
 
         # Maze Solver
         self.sf = SolverFactory()
@@ -65,34 +69,31 @@ class MazeVision():
 
         cv2.imwrite(fpath_color, image_color)
         cv2.imwrite(fpath_depth, image_depth)
-
-
-        # Check for Markers
-        fma = self.FIDUCIAL_METHOD_ARUCO(marker_length = 0.02, set_debug=True)
-        detection = fma.detect_markers(image_color, camera_info=camera_info)
         
-        if detection == 0:
-            fma.get_board_2D_rotmat()
-            img_cropped_maze = fma._maze_mask(image_color)
+        # Runner
+        if not self.fma.find_board(image_color, camera_info):
 
+            # Retrieve Board Results
+            img_cropped_maze = self.fma.get_cropped_maze()
 
             # Clean Masked Maze Surface
             ret, thresh = cv2.threshold(img_cropped_maze, 100, 255, cv2.THRESH_BINARY)
-
-            kernel = np.ones((10,10), np.uint8)
-            img_cropped_maze_binary = cv2.erode(thresh, kernel)
+            # kernel = np.ones((3,3), np.uint8)
+            # img_cropped_maze_binary = cv2.erode(thresh, kernel)
 
             # Simplify & Clean Cropped Maze Image
-            result_img, result_fpath = self.runD3D_maurer_filter(img_cropped_maze_binary)
+            result_img, result_fpath = self.runD3D_maurer_filter(thresh)
             maurer_image = self.clean_maurer_path(result_img)
-
-            cv2.imwrite('debug_step5_maurer_cleaned.tiff', maurer_image)
 
             # Run Python Maze Solver on Cleaned Image
             solved_path_list, solved_img = MazeSolver(maurer_image, self.solve_algorithm)
             # solved_csv_filepath, solved_image_filepath = self.call_path_solver(maurer_image)
 
-            cv2.imwrite('debug_step6_solved_path.tiff', solved_img)
+            # Debug
+            if self.debug:
+                cv2.imwrite('debug_step5_cv2_cleanup.tiff', thresh)
+                cv2.imwrite('debug_step6_maurer_cleaned.tiff', maurer_image)
+                cv2.imwrite('debug_step7_solved_path.tiff', solved_img)
 
             # # Depth
             # # temporary, grab depth at origin and assume flat.
@@ -117,7 +118,7 @@ class MazeVision():
             # Return Results
             # result = [features.scale, projected_2d_pose, maze_pose_relative_2_camera, path]
 
-            return [], solved_img
+            return [], solved_img.astype('uint8')
         
         else:
             return 1

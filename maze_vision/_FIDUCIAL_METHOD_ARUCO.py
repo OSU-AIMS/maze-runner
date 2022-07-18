@@ -33,6 +33,8 @@ class FIDUCIAL_METHOD_ARUCO():
         self.marker_length = marker_length
         self.last_known_markers = { }
 
+
+    ''' DATA STRUCTURE '''
     class Marker():
         '''
         Data structure for fiducial marker information.
@@ -51,7 +53,33 @@ class FIDUCIAL_METHOD_ARUCO():
             self.centroid = centroid
             self.rvec = axis_angle_rotation
 
-    def detect_markers(self, img: np.ndarray, camera_info: CameraInfo):
+
+    ''' PUBLIC METHODS '''
+    def find_board(self, color_image: np.ndarray, cam_info: CameraInfo) -> int:
+        '''
+            Tool wrapper.
+        '''
+
+        r1 = self._detect_markers(color_image, camera_info=cam_info)
+        if not r1: 
+            r2 = self._calc_board_2D_rotmat()
+        else:
+            return r1
+        if not ( r1 or r2 ): 
+            r3 = self._maze_mask(color_image)
+        else:
+            return r2
+        if r1 or r2 or r3:
+            return r3
+
+    def get_cropped_maze(self) -> np.ndarray:
+        return self.img_cropped_maze
+
+    def get_img_annotated_w_markers(self) -> np.ndarray:
+        return self._img_poses_annotated
+
+    ''' PROTECTED METHODS '''
+    def _detect_markers(self, img: np.ndarray, camera_info: CameraInfo):
         '''
         Find Fiducial markers and report location.
         img: grayscale image containing markers to find
@@ -72,7 +100,7 @@ class FIDUCIAL_METHOD_ARUCO():
         self.last_known_markers.clear()
 
         # Parse Output
-        if len(ids) > 0:
+        if ids is not None:
             # Calculate Poses of Detected Markers
             (rvecs, tvecs, points) = cv2.aruco.estimatePoseSingleMarkers( corners, markerLength=self.marker_length, cameraMatrix=np.asarray(camera_info.k).reshape((3,3)), distCoeffs=np.asarray(camera_info.d) )
 
@@ -87,7 +115,7 @@ class FIDUCIAL_METHOD_ARUCO():
                 detected_markers[ids[i][0].T] = self.Marker(ids[i][0].T, centroid, rvecs[i])
 
                 # Debug: Draw Poses on Image
-                if self.debug: cv2.drawFrameAxes( img_poses, cameraMatrix=np.asarray(camera_info.k).reshape((3,3)), distCoeffs=np.asarray(camera_info.d), rvec=rvecs[i], tvec=tvecs[i], length=0.05, thickness=5 )
+                cv2.drawFrameAxes( img_poses, cameraMatrix=np.asarray(camera_info.k).reshape((3,3)), distCoeffs=np.asarray(camera_info.d), rvec=rvecs[i], tvec=tvecs[i], length=0.05, thickness=5 )
 
             # Debug
             self._img_poses_annotated = img_poses
@@ -100,7 +128,7 @@ class FIDUCIAL_METHOD_ARUCO():
             print("Something went wrong parsing detected Fiducial Markers. Were any markers detected?")
             return 1
 
-    def get_board_2D_rotmat(self) -> np.ndarray:
+    def _calc_board_2D_rotmat(self) -> np.ndarray:
         '''
         Method: All four markers required to determine board pose
         Assumptions:
@@ -108,7 +136,9 @@ class FIDUCIAL_METHOD_ARUCO():
             - Board corner number convention is met (see `c_topleft` definitions in method source code)
         '''
         # Data Validation
-        if not len(self.last_known_markers) == 4: raise ValueError('All four fiducial markers required to calculate board info')
+        if not len(self.last_known_markers) == 4: 
+            print('All four fiducial markers required to calculate board info')
+            return 1
         
         # Convention:   Right-Hand-Rule
         #   Origin  :   @ TOP.LEFT
@@ -136,22 +166,23 @@ class FIDUCIAL_METHOD_ARUCO():
             axis_z = np.cross(axis_x, axis_y)
             axis_z = axis_z / np.linalg.norm(axis_z, 2)
         else:
-            raise ValueError(" > WARN: X & Y axis insufficiently square. Failed to assemble rotation matrix.")
-            return None
+            print(" > WARN: X & Y axis insufficiently square. Failed to assemble rotation matrix.")
+            return 2
     
         # Package into Rotation Matrix
         # https://en.wikipedia.org/wiki/Rotation_formalisms_in_three_dimensions#Formalism_alternatives
         rot_matrix = np.stack([axis_x, axis_y, axis_z], axis=1)
         
+        # Return
         self.board_2d_rotmatrix = rot_matrix
-        return rot_matrix
+        return 0
 
     def _maze_mask(self, img) -> np.ndarray:
         """
         Generate a mask of region confined by a quadrilateral constrained by the fiducial markers
         :param dots: Input Dictionary with three dot keys.
         :param img: cv2 mat 8-bit image (0-255) containing the maze
-        :return: img
+        :return: exit status
         """
 
         # Check Input
@@ -209,8 +240,11 @@ class FIDUCIAL_METHOD_ARUCO():
         if self.debug: cv2.imwrite('debug_step4_masked_rotated_cropped.tiff', img_cropped)
 
         # Return
-        return img_cropped
+        self.img_cropped_maze = img_cropped
+        return 0
 
+
+''' TESTING '''
 if __name__ == '__main__':
 
     # Test Variables
@@ -222,7 +256,6 @@ if __name__ == '__main__':
 
     # Test
     fma = FIDUCIAL_METHOD_ARUCO(marker_length = 0.02, set_debug=True)
-    fma.detect_markers(c, dummy_cam_info)
+    fma.find_board(c, dummy_cam_info)
 
-    fma.get_board_2D_rotmat()
-    fma._maze_mask(c)
+    img = fma.get_cropped_maze()

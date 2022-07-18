@@ -88,6 +88,7 @@ def runD3D_maurer_filter(self, input_maze_image: np.ndarray) -> tuple:
     with open(pipeline, 'r') as jsonFile:
         data = json.load(jsonFile)
         data["0"]["FileName"] = fpath_input
+        data["4"]["SelectedThresholds"][0]["Comparison Value"] = 0.5
         data["7"]["FileName"] = fpath_output
 
     with open(pipeline, 'w') as jsonFile:

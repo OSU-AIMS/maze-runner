@@ -55,7 +55,7 @@ class VisionProcessingControl(Node):
 
         # Setup Pub/Sub & TimeSychronizer
         self.pub_maze_data = self.create_publisher(MazeData, "maze_data", qos_profile = 5)
-        self.pub_solved_maze = self.create_publisher(Image, 'solved_maze', qos_profile = 3)
+        self.pub_solved_maze = self.create_publisher(Image, "solved_maze", qos_profile = 5)
         self.sub_intrinsics  = self.create_subscription(CameraInfo, "/rs1/color/camera_info", self._callback_intrinsics, 2)
         sub_color = message_filters.Subscriber(self, Image, "/rs1/color/image_raw")
         sub_depth = message_filters.Subscriber(self, Image, "/rs1/depth/image_rect_raw")
@@ -74,7 +74,7 @@ class VisionProcessingControl(Node):
         self.seq_counter = 0
 
         # Initialize Vision Processing Tool
-        self.mviz = MazeVision()
+        self.mviz = MazeVision(set_debug=True)
         self.cvbridge = CvBridge()
 
         # Report
@@ -113,7 +113,7 @@ class VisionProcessingControl(Node):
             # Process vision
             # Process Input Data from ROS message to .Mat object
             # TODO: add check to ensure only recent messages are being processed
-            c = self.cvbridge.imgmsg_to_cv2(self.color)
+            c = self.cvbridge.imgmsg_to_cv2(self.color, 'bgr8')
             d = self.cvbridge.imgmsg_to_cv2(self.depth, "passthrough")
 
             # Runner
@@ -124,19 +124,15 @@ class VisionProcessingControl(Node):
             else:
                 vision_data, solved_maze_img = runner_feedback
 
-                import cv2
-                cv2.imshow('test', solved_maze_img)
-                cv2.waitKey()
 
                 # TODO: post-process pose array for path
                 # found_path = vision_data[3]
                 found_path =[Pose]
 
                 ## Build message
-                h = Header
+                h = Header()
 
-                h.stamp     = self.get_clock().now()
-                h.seq       = self.seq_counter
+                h.stamp     = self.get_clock().now().to_msg()
                 h.frame_id  = self.color.header.frame_id
 
                 # Build Maze Feature Data Message
@@ -153,11 +149,8 @@ class VisionProcessingControl(Node):
                 # msg.path = found_path
 
                 # Build Solved Maze Image Message
-                msg_img = Image
+                msg_img = self.cvbridge.cv2_to_imgmsg(solved_maze_img, 'rgb8')
                 msg_img.header = h
-                msg_img.height = solved_maze_img.shape[0] 
-                msg_img.width = solved_maze_img.shape[1]
-                msg_img.data = solved_maze_img.astype('uint8')
 
                 ## Publish message
                 # self.pub_maze_data.publish(msg)
@@ -176,7 +169,7 @@ def main(args=None):
     rclpy.init(args=args)
 
     # Init Node & Spin
-    vp = VisionProcessingControl()
+    vp = VisionProcessingControl(3)
     rclpy.spin(vp)
 
     # Cleanup
