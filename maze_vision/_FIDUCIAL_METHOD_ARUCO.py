@@ -26,6 +26,9 @@ class FIDUCIAL_METHOD_ARUCO():
         self.aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_6X6_50)
         self.aruco_param = cv2.aruco.DetectorParameters_create()
     
+        # Init Varaibles
+        self._img_poses_annotated = np.zeros((720,1280))
+
         # Known Markers
         self.marker_length = marker_length
         self.last_known_markers = { }

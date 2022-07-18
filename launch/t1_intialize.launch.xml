@@ -56,10 +56,10 @@
             <arg name="initial_reset"       value="true" />
 
             <arg name="enable_color"        value="true" />
-            <arg name="rgb_camera.profile"  value="640,480,15" />
+            <arg name="rgb_camera.profile"  value="1280,720,15" />
 
             <arg name="enable_depth"        value="true" />
-            <arg name="depth_module.profile" value="640,480,15" />
+            <arg name="depth_module.profile" value="1280,720,15" />
 
             <arg name="enable_sync"         value="true" />
             <arg name="align_depth.enable"  value="true" />
