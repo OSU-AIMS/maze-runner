@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>maze_vision</name>
+  <version>0.1.0</version>
+  <description>
+    <p>PROJECT: "Maze Runner"</p>
+    <p>
+      This package contains software for the Maze Runner project.
+    </p>
+    <p>
+      Before using any of the files included in this package, be sure to check
+      they are correct for the particular robot model and configuration you
+      intend to use them with. Further, confirm motion with simulation prior
+      to physical testing.
+    </p>
+  </description>
+
+  <author>A.C. Buynak</author>
+  <maintainer email="buynak.9@osu.edu">A.C. Buynak (AIMS Lab @ The Ohio State University)</maintainer>
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <depend>rclpy</depend>
+
+  <!-- Custom Interface Creation Support-->
+  <build_depend>rosidl_default_generators</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+ 
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <!-- Testing -->
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+</package>
+
+
