@@ -1,0 +1,142 @@
+{
+    "0": {
+        "CellAttributeMatrixName": "CellData",
+        "DataContainerName": "ImageDataContainer",
+        "FileName": "//PATH/TO/FILE//mzrun_ws/maze_masked.tiff",
+        "FilterVersion": "1.0.502",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "ITK::Image Reader",
+        "Filter_Name": "ITKImageReader",
+        "Filter_Uuid": "{653b7b5c-03cb-5b32-8c3e-3637745e5ff6}",
+        "ImageDataArrayName": "MazePath"
+    },
+    "1": {
+        "BackgroundValue": 0,
+        "FilterVersion": "1.0.502",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "ITK::Signed Maurer Distance Map Image Filter",
+        "Filter_Name": "ITKSignedMaurerDistanceMapImage",
+        "Filter_Uuid": "{bb15d42a-3077-582a-be1a-76b2bae172e9}",
+        "InsideIsPositive": 1,
+        "NewCellArrayName": "MaurerDist",
+        "SaveAsNewArray": 1,
+        "SelectedCellArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "MazePath",
+            "Data Container Name": "ImageDataContainer"
+        },
+        "SquaredDistance": 0,
+        "UseImageSpacing": 1
+    },
+    "2": {
+        "CalculatedArray": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "MaskedMaurerDist",
+            "Data Container Name": "ImageDataContainer"
+        },
+        "FilterVersion": "1.2.826",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "Attribute Array Calculator",
+        "Filter_Name": "ArrayCalculator",
+        "Filter_Uuid": "{7ff0ebb3-7b0d-5ff7-b9d8-5147031aca10}",
+        "InfixEquation": "MaurerDist*MazePath",
+        "ScalarType": 9,
+        "SelectedAttributeMatrix": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "",
+            "Data Container Name": "ImageDataContainer"
+        },
+        "Units": 1
+    },
+    "3": {
+        "FilterVersion": "1.0.502",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "ITK::Rescale Intensity Image Filter",
+        "Filter_Name": "ITKRescaleIntensityImage",
+        "Filter_Uuid": "{77bf2192-851d-5127-9add-634c1ef4f67f}",
+        "NewCellArrayName": "ScaledMaurerDist",
+        "OutputMaximum": 1,
+        "OutputMinimum": 0,
+        "OutputType": -1,
+        "SaveAsNewArray": 0,
+        "SelectedCellArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "MaskedMaurerDist",
+            "Data Container Name": "ImageDataContainer"
+        }
+    },
+    "4": {
+        "DestinationArrayName": "MaurerMask",
+        "FilterVersion": "1.2.826",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "Threshold Objects",
+        "Filter_Name": "MultiThresholdObjects",
+        "Filter_Uuid": "{014b7300-cf36-5ede-a751-5faf9b119dae}",
+        "SelectedThresholds": [
+            {
+                "Attribute Array Name": "MaskedMaurerDist",
+                "Attribute Matrix Name": "CellData",
+                "Comparison Operator": 1,
+                "Comparison Value": 0.699999988079071,
+                "Data Container Name": "ImageDataContainer"
+            }
+        ]
+    },
+    "5": {
+        "FilterVersion": "1.2.826",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "Convert AttributeArray Data Type",
+        "Filter_Name": "ConvertData",
+        "Filter_Uuid": "{f4ba5fa4-bb5c-5dd1-9429-0dd86d0ecb37}",
+        "OutputArrayName": "MaurerMaskInt",
+        "ScalarType": 1,
+        "SelectedCellArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "MaurerMask",
+            "Data Container Name": "ImageDataContainer"
+        }
+    },
+    "6": {
+        "FilterVersion": "1.2.826",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "Replace Value in Array",
+        "Filter_Name": "ReplaceValueInArray",
+        "Filter_Uuid": "{a37f2e24-7400-5005-b9a7-b2224570cbe9}",
+        "RemoveValue": 1,
+        "ReplaceValue": 255,
+        "SelectedArray": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "MaurerMaskInt",
+            "Data Container Name": "ImageDataContainer"
+        }
+    },
+    "7": {
+        "FileName": "//PATH/TO/FILE//mzrun_ws/maze_maurer_path.tiff",
+        "FilterVersion": "1.0.502",
+        "Filter_Enabled": true,
+        "Filter_Human_Label": "ITK::Image Writer",
+        "Filter_Name": "ITKImageWriter",
+        "Filter_Uuid": "{11473711-f94d-5d96-b749-ec36a81ad338}",
+        "ImageArrayPath": {
+            "Attribute Matrix Name": "CellData",
+            "Data Array Name": "MaurerMaskInt",
+            "Data Container Name": "ImageDataContainer"
+        },
+        "Plane": 0
+    },
+    "8": {
+        "FilterVersion": "1.2.826",
+        "Filter_Enabled": false,
+        "Filter_Human_Label": "Write DREAM.3D Data File",
+        "Filter_Name": "DataContainerWriter",
+        "Filter_Uuid": "{3fcd4c43-9d75-5b86-aad4-4441bc914f37}",
+        "OutputFile": "//PATH/TO/FILE/Rotated_54_processed.dream3d",
+        "WriteTimeSeries": 0,
+        "WriteXdmfFile": 1
+    },
+    "PipelineBuilder": {
+        "Name": "pipeline_maurer_path",
+        "Number_Filters": 9,
+        "Version": 6
+    }
+}

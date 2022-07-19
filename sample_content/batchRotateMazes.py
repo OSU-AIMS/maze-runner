@@ -21,4 +21,4 @@ for angle in angles:
     with open(rotationPipeline, 'w') as jsonFile:
         json.dump(data, jsonFile)
 
-    subprocess.call(["/opt/dream3d/bin/PipelineRunner", "-p", rotationPipeline])
+    subprocess.call(["/usr/local/programs/DREAM3D/bin/PipelineRunner", "-p", rotationPipeline])

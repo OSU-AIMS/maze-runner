@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Tier1 Launch File: Intialize Vision System -->
+
+<launch>
+
+    <!-- Configureable Launch Parameters -->
+    <arg name="sim_vision"  default="false" />
+
+    <!--  Setup Camera -->
+    <group if="$(var sim_vision)" >
+        <!-- Static Image Publisher to stand in for real camera -->
+        <node pkg="image_publisher" exec="image_publisher_node" name="color" namespace="camera"
+            args="$(find-pkg-share maze_runner)/sample_content/vision_processing/maze_labFloor_far.jpg" >
+            <param name="flip_horizontal"   value="false" />
+            <param name="flip_vertical"     value="false" />
+            <param name="frame_id"          value="camera_link" />
+            <param name="publish_rate"      value="15.0" />
+        </node>
+    </group>
+    <group unless="$(var sim_vision)" >
+        <include file="$(find-pkg-share realsense2_camera)/launch/rs_launch.py" >
+            <arg name="camera_name"         value="rs1" />
+            <arg name="initial_reset"       value="true" />
+
+            <arg name="enable_color"        value="true" />
+            <arg name="rgb_camera.profile"  value="1280,720,15" />
+
+            <arg name="enable_depth"        value="true" />
+            <arg name="depth_module.profile" value="1280,720,15" />
+
+            <arg name="enable_sync"         value="true" />
+            <arg name="align_depth.enable"  value="true" />
+            <arg name="clip_distance"       value="3.0" />
+            <arg name="pointcloud.enable"   value="false" />
+            
+        </include>
+    </group>
+
+    <!-- Setup Vision Processing Node -->
+    <node pkg="maze_runner" exec="node_maze_vision.py" name="maze_vision" respawn="true" />
+
+</launch>
