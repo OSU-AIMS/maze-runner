@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>maze_support</name>
+  <version>0.0.0</version>
+  <description>Maze Runner support package</description>
+  <author>A.C. Buynak</author>
+  <maintainer email="buynak.9@osu.edu">A.C. Buynak (AIMS Lab @ The Ohio State University)</maintainer>
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>cmake</buildtool_depend>
+  <build_depend>ros_industrial_cmake_boilerplate</build_depend>
+
+  <exec_depend>motoman_gp7_support</exec_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>

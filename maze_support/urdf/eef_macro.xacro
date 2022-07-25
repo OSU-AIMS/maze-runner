@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+<xacro:macro name="maze_eef" params="prefix">
+
+<!-- Maze Runner Marker EEF URDF -->
+
+    <link name="${prefix}eef_base_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://maze_support/meshes/visual/eef_wtip.stl"/>
+            </geometry>
+            <material name="eef">
+                <color rgba="0.5 0.8 0.5 1"/>
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="package://maze_support/meshes/collision/eef_wcamera.stl"/>
+            </geometry>
+        </collision>
+    </link>
+ 
+    <!-- Pointer TCP defined as the tip of the expo marker -->
+    <link name="${prefix}pointer_tcp"/>
+    <joint name="${prefix}eef_base_link-pointer_tcp" type="fixed">
+        <origin xyz="0.1880 0 0" rpy="0 0 0"/>  <!-- 0.02222 0 0.18415 -->
+        <parent link="${prefix}eef_base_link"/>
+        <child link="${prefix}pointer_tcp"/> 
+    </joint>
+
+    <!-- Camera TCP defined as the tip of the expo marker -->
+    <link name="${prefix}camera_mnt"/>
+    <joint name="${prefix}eef_base_link-camera_mnt" type="fixed">
+        <origin xyz="0.08300 0.01250 -0.02915" rpy="${radians(90)} ${radians(90)} 0"/>
+        <parent link="${prefix}eef_base_link"/>
+        <child link="${prefix}camera_mnt"/> 
+    </joint>
+
+
+</xacro:macro>
+</robot>

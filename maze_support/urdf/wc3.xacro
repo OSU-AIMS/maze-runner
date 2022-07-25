@@ -1,0 +1,25 @@
+<?xml version="1.0" ?>
+
+<robot name="manipulator" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <!-- Robot -->
+    <xacro:include filename="$(find motoman_gp7_support)/urdf/gp7_macro.xacro" />
+    <xacro:motoman_gp7 prefix=""/>
+
+    <!-- End Effector -->
+    <xacro:include filename="$(find maze_support)/urdf/eef_macro.xacro" />
+    <xacro:maze_eef prefix=""/>
+    <joint name="flange-eef_base_link" type="fixed">
+        <origin xyz="0 0 0" rpy="${radians(180)} ${radians(-90)} 0"/>
+        <parent link="tool0"/>
+        <child link="eef_base_link"/>
+    </joint>
+
+    <!-- Camera -->
+    <xacro:arg name="use_nominal_extrinsics" default="false" />
+    <xacro:include filename="$(find realsense2_description)/urdf/_d435i.urdf.xacro"/>
+    <xacro:sensor_d435i parent="camera_mnt" use_nominal_extrinsics="$(arg use_nominal_extrinsics)">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:sensor_d435i>
+
+</robot>
