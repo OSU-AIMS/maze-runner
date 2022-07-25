@@ -2,3 +2,7 @@
     local-name: tesseract_ros2
     uri: https://github.com/tesseract-robotics/tesseract_ros2.git
     version: 4745fb89b64045b55831782e68f60582b88ec39c
+- git:
+    local-name: motoman
+    uri: https://github.com/acbuynak/motoman
+    version: ros2
