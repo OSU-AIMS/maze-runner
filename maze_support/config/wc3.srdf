@@ -1,0 +1,64 @@
+<robot name="undefined" version="1.0.0">
+    <group name="tcp_pointer">
+        <chain base_link="base_link" tip_link="pointer_tcp"/>
+    </group>
+    <group name="manipulator">
+        <chain base_link="base_link" tip_link="tool0"/>
+    </group>
+    <group name="tcp_camera">
+        <chain base_link="base_link" tip_link="camera_link"/>
+    </group>
+    <group_state name="pointdown_center" group="tcp_pointer">
+        <joint name="joint_6_t" value="0"/>
+        <joint name="joint_5_b" value="-1.57"/>
+        <joint name="joint_4_r" value="0"/>
+        <joint name="joint_3_u" value="0"/>
+        <joint name="joint_1_s" value="0"/>
+        <joint name="joint_2_l" value="0"/>
+    </group_state>
+    <group_state name="pointdown_right" group="tcp_pointer">
+        <joint name="joint_6_t" value="0"/>
+        <joint name="joint_5_b" value="-1.57"/>
+        <joint name="joint_4_r" value="0"/>
+        <joint name="joint_3_u" value="0"/>
+        <joint name="joint_1_s" value="-1.57"/>
+        <joint name="joint_2_l" value="0"/>
+    </group_state>
+    <group_state name="overlook_right" group="tcp_camera">
+        <joint name="joint_6_t" value="0"/>
+        <joint name="joint_5_b" value="0"/>
+        <joint name="joint_4_r" value="0"/>
+        <joint name="joint_3_u" value="0"/>
+        <joint name="joint_1_s" value="0"/>
+        <joint name="joint_2_l" value="0"/>
+    </group_state>
+    <group_tcps group="manipulator">
+        <tcp name="tcp_flange" xyz="0 0 0" wxyz="1 0 0 0"/>
+    </group_tcps>
+    <group_tcps group="tcp_camera">
+        <tcp name="tcp_camera" xyz="0 0 0" wxyz="1 0 0 0"/>
+    </group_tcps>
+    <group_tcps group="tcp_pointer">
+        <tcp name="tcp_pointer" xyz="0 0 0" wxyz="1 0 0 0"/>
+    </group_tcps>
+    <group_opw group="manipulator" a1="0.040" a2="0.040" b="0" c1="0.330" c2="0.445" c3="0.44" c4="0.080" offsets="1.570 0.0000 3.1415 0.000 1.570 0.000" sign_corrections="-1 -1 -1 -1 -1 -1"/>
+    <disable_collisions link1="eef_base_link" link2="link_6_t" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="link_6_t" reason="Never"/>
+    <disable_collisions link1="link_2_l" link2="link_6_t" reason="Never"/>
+    <disable_collisions link1="link_5_b" link2="link_6_t" reason="Adjacent"/>
+    <disable_collisions link1="link_4_r" link2="link_5_b" reason="Adjacent"/>
+    <disable_collisions link1="link_2_l" link2="link_3_u" reason="Adjacent"/>
+    <disable_collisions link1="camera_link" link2="link_5_b" reason="Never"/>
+    <disable_collisions link1="link_1_s" link2="link_2_l" reason="Adjacent"/>
+    <disable_collisions link1="base_link" link2="link_3_u" reason="Never"/>
+    <disable_collisions link1="base_link" link2="link_1_s" reason="Adjacent"/>
+    <disable_collisions link1="link_3_u" link2="link_6_t" reason="Never"/>
+    <disable_collisions link1="link_3_u" link2="link_5_b" reason="Never"/>
+    <disable_collisions link1="link_2_l" link2="link_5_b" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="eef_base_link" reason="Allways"/>
+    <disable_collisions link1="eef_base_link" link2="link_5_b" reason="Never"/>
+    <disable_collisions link1="camera_link" link2="link_3_u" reason="Never"/>
+    <disable_collisions link1="link_3_u" link2="link_4_r" reason="Never"/>
+    <disable_collisions link1="link_1_s" link2="link_3_u" reason="Never"/>
+    <disable_collisions link1="eef_base_link" link2="link_3_u" reason="Never"/>
+</robot>
