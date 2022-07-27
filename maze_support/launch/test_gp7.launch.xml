@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
   <arg name="robot_description" default="$(command 'xacro $(find-pkg-share maze_support)/urdf/wc3.xacro')"/>
-  <!-- <arg name="robot_description_semantic" default="$(command 'cat $(find-pkg-share maze_support)/config/wc3.srdf')"/> -->
+  <arg name="robot_description_semantic" default="$(command 'cat $(find-pkg-share maze_support)/config/wc3.srdf')"/>
   <arg name="use_gui" default="true"/>
   <arg name="rviz_config" default="$(find-pkg-share maze_support)/config/rviz_base_config.rviz"/>
 
@@ -21,7 +21,7 @@
 
   <node pkg="rviz2" exec="rviz2" args="-d $(var rviz_config)">
     <param name="robot_description" value="$(var robot_description)"/>
-    <!-- <param name="robot_description_semantic" value="$(var robot_description_semantic)"/> -->
+    <param name="robot_description_semantic" value="$(var robot_description_semantic)"/>
   </node>
 
 </launch>
