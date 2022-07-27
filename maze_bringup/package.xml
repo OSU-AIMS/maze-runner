@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>maze_bringup</name>
+  <version>0.0.0</version>
+  <description>Primary package for activating nodes and components of the MazeRunner project.</description>
+
+  <author>A.C. Buynak</author>
+  <maintainer email="buynak.9@osu.edu">A.C. Buynak (AIMS Lab @ The Ohio State University)</maintainer>
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <build_depend>ros_industrial_cmake_boilerplate</build_depend>
+
+  <exec_depend>maze_runner</exec_depend>
+  <exec_depend>maze_support</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- Setup Arguments -->
+    <arg name="sim_vision"  default="false" />
+    <arg name="sim_robot"   default="true" />
+    <arg name="rviz_config" default="$(find-pkg-share maze_bringup)/config/sim_window.rviz"/>
+
+    <!-- Configuration -->
+    <arg name="robot_description" default="$(command 'xacro $(find-pkg-share maze_support)/urdf/wc3.xacro')"/>
+    <arg name="robot_description_semantic" default="$(command 'cat $(find-pkg-share maze_support)/config/wc3.srdf')"/>
+
+
+    <!-- Robot Description and Hardware Interface -->
+    <node pkg="robot_state_publisher" exec="robot_state_publisher" output="screen">
+        <param name="robot_description" value="$(var robot_description)"/>
+    </node>
+
+    <group if="$(var sim_robot)">
+        <!-- [[Robot Simulator Goes Here]] -->
+        <node pkg="joint_state_publisher" exec="joint_state_publisher">
+            <param name="source_list" value="[robot_joint_states]"/>
+        </node>
+        <node pkg="joint_state_publisher_gui" exec="joint_state_publisher_gui" name="joint_state_publisher_gui" output="screen">
+            <remap from="/joint_states" to="/robot_joint_states"/>
+        </node>
+    </group>
+    <group unless="$(var sim_robot)">
+        <!-- [[Motoman Driver Interface Goes Here]] -->
+    </group>
+
+
+    <!-- Realsense Camera -->
+    <group if="$(var sim_vision)" >
+        <!-- Static Image Publisher to stand in for real camera -->
+    </group>
+    <group unless="$(var sim_vision)" >
+        <!-- Physical Hardware: Intel Realsense D435 or D455 -->
+        <include file="$(find-pkg-share realsense2_camera)/launch/rs_launch.py" >
+            <arg name="camera_name"         value="rs1" />
+            <arg name="initial_reset"       value="false" />
+
+            <arg name="enable_color"        value="true" />
+            <arg name="rgb_camera.profile"  value="1280,720,15" />
+
+            <arg name="enable_depth"        value="true" />
+            <arg name="depth_module.profile" value="1280,720,15" />
+
+            <arg name="enable_sync"         value="true" />
+            <arg name="align_depth.enable"  value="true" />
+            <arg name="clip_distance"       value="3.0" />
+            <arg name="pointcloud.enable"   value="true" />
+        </include>
+        <node pkg="tf2_ros" exec="static_transform_publisher" name="camera_mnt_2_camera" args="0 0 0 0 0 0 1 camera_link rs1_color_frame" respawn="true" /> <!-- Issues with this not working due to delayed start of realsense -->
+    </group>
+
+
+    <!-- Open RViz Window -->
+    <node pkg="rviz2" exec="rviz2" args="-d $(var rviz_config)">
+        <param name="robot_description" value="$(var robot_description)"/>
+        <param name="robot_description_semantic" value="$(var robot_description_semantic)"/>
+    </node>
+
+</launch>
