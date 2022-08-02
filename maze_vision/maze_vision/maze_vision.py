@@ -54,7 +54,7 @@ class MazeVision():
     from ._FIDUCIAL_METHOD_ARUCO import FIDUCIAL_METHOD_ARUCO
     from ._FIDUCIAL_METHOD_RGB_DOTS import FIDUCIAL_METHOD_RGB_DOTS
     from ._PRCS_DEPTH import smooth_depth_map
-    from ._PRCS_PATH_SOLVER import clean_maurer_path, call_path_solver
+    from ._PRCS_PATH_SOLVER import clean_maurer_img, convert_path_list_to_img_px_coords, transform_path_to_pose_array
     from ._RUN_D3D import runD3D_maze_locators, runD3D_maurer_filter
 
 
@@ -83,37 +83,20 @@ class MazeVision():
 
             # Simplify & Clean Cropped Maze Image
             result_img, result_fpath = self.runD3D_maurer_filter(thresh)
-            maurer_image = self.clean_maurer_path(result_img)
+            maurer_image = self.clean_maurer_img(result_img)
 
             # Run Python Maze Solver on Cleaned Image
-            solved_path_list, solved_img = MazeSolver(maurer_image, self.solve_algorithm)
-            # solved_csv_filepath, solved_image_filepath = self.call_path_solver(maurer_image)
+            path_wrt_maze, solved_img = MazeSolver(maurer_image, self.solve_algorithm)
+
+            # Convert to PoseArray Msg
+            path_wrt_image = self.convert_path_list_to_img_px_coords(transform_ = self.fma.get_maze_origin_transform_matrix(), path = path_wrt_maze)
+            path_as_pose_array = self.transform_path_to_pose_array(path_wrt_image, intrinsics=camera_info, dmap=image_depth)
 
             # Debug
             if self.debug:
                 cv2.imwrite('debug_step5_cv2_cleanup.tiff', thresh)
                 cv2.imwrite('debug_step6_maurer_cleaned.tiff', maurer_image)
                 cv2.imwrite('debug_step7_solved_path.tiff', solved_img)
-
-            # # Depth
-            # # temporary, grab depth at origin and assume flat.
-            # # TODO: new method to get depth at every waypoing along path
-            # depth_features = self.smooth_depth_map(image_depth)
-            # depth_origin = depth_features[features.mazeCentroid[0], features.mazeCentroid[1]]
-
-
-            # # Assemble Pose relative to camera link
-            # # maze_pose_relative_2_camera = [x,y,z,x,y,z,w]
-            # rot3d_tf = np.identity(4)
-            # rot3d_tf[:-1,:-1] = features.rotMatrix.astype("float64")
-            # rot3d_tf[:-1, 3] = np.array([features.mazeCentroid[0], features.mazeCentroid[1], depth_origin])
-
-            # rot3d_q = tf.transformations.quaternion_from_matrix(rot3d_tf)
-            # rot3d_v = tf.transformations.translation_from_matrix(rot3d_tf)
-            # maze_pose_relative_2_camera = np.hstack((rot3d_v, rot3d_q))
-
-            # Assemble Path
-            path = []
 
             # Return Results
             # result = [features.scale, projected_2d_pose, maze_pose_relative_2_camera, path]

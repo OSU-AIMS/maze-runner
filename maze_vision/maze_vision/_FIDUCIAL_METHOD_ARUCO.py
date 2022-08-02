@@ -78,6 +78,14 @@ class FIDUCIAL_METHOD_ARUCO():
     def get_img_annotated_w_markers(self) -> np.ndarray:
         return self._img_poses_annotated
 
+    def get_maze_origin_transform_matrix(self) -> np.ndarray:
+        """ Returns origin of maze in the original color frames pixel coordinates. Origin centered on Marker ID #1 """
+        tf_ = np.identity(4)
+        tf_[:-1, :-1] = self.board_2d_rotmatrix
+        tf_[0, -1] = self.last_known_markers[1].centroid[0]
+        tf_[1, -1] = self.last_known_markers[1].centroid[1]
+        return tf_
+
     ''' PROTECTED METHODS '''
     def _detect_markers(self, img: np.ndarray, camera_info: CameraInfo):
         '''

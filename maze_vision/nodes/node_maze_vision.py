@@ -91,9 +91,6 @@ class VisionProcessingControl(Node):
     def _callback_intrinsics(self, data) -> None:
         self.camera_info = data
 
-    def _pub_results(self) -> None:
-        self.get_logger().warn("Test: Cycled Publisher")
-
     def _pub_results_real(self) -> None:
         """
             Called by rclpy timer defined external to node. 
