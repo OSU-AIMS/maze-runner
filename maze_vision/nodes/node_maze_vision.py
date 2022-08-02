@@ -21,7 +21,7 @@ import numpy as np
 
 import message_filters
 
-from maze_vision.msg import MazeData
+from maze_msgs.msg import MazeData
 from std_msgs.msg import Header
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import CameraInfo
