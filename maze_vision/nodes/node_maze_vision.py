@@ -53,11 +53,11 @@ class VisionProcessingControl(Node):
         super().__init__('vision_processing')
 
         # Setup Pub/Sub & TimeSychronizer
-        self.pub_maze_data = self.create_publisher(MazeData, "maze_data", qos_profile = 5)
+        self.pub_raw_path = self.create_publisher(PoseArray, "raw_path", qos_profile = 10)
         self.pub_solved_maze = self.create_publisher(Image, "solved_maze", qos_profile = 5)
         self.sub_intrinsics  = self.create_subscription(CameraInfo, "/rs1/color/camera_info", self._callback_intrinsics, 2)
         sub_color = message_filters.Subscriber(self, Image, "/rs1/color/image_raw")
-        sub_depth = message_filters.Subscriber(self, Image, "/rs1/depth/image_rect_raw")
+        sub_depth = message_filters.Subscriber(self, Image, "/rs1/aligned_depth_to_color/image_raw")
 
         self.ts = message_filters.TimeSynchronizer([sub_color, sub_depth], queue_size=10)
         self.ts.registerCallback(self._synchronous_callback)
@@ -108,12 +108,11 @@ class VisionProcessingControl(Node):
             start = self.get_clock().now()
             self.seq_counter+=1
 
-
             # Process vision
             # Process Input Data from ROS message to .Mat object
             # TODO: add check to ensure only recent messages are being processed
             c = self.cvbridge.imgmsg_to_cv2(self.color, 'bgr8')
-            d = self.cvbridge.imgmsg_to_cv2(self.depth, "passthrough")
+            d = self.cvbridge.imgmsg_to_cv2(self.depth, 'passthrough')
 
             # Runner
             runner_feedback = self.mviz.vision_runner(image_color=c, image_depth=d, camera_info=self.camera_info)
@@ -154,7 +153,7 @@ def main(args=None):
     rclpy.init(args=args)
 
     # Init Node & Spin
-    vp = VisionProcessingControl(3)
+    vp = VisionProcessingControl(cycle_freq=3)
     rclpy.spin(vp)
 
     # Cleanup
@@ -167,4 +166,3 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         exit()
-

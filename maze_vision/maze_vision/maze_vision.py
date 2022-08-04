@@ -59,7 +59,7 @@ class MazeVision():
     from ._FIDUCIAL_METHOD_ARUCO import FIDUCIAL_METHOD_ARUCO
     from ._FIDUCIAL_METHOD_RGB_DOTS import FIDUCIAL_METHOD_RGB_DOTS
     from ._PRCS_DEPTH import smooth_depth_map
-    from ._PRCS_PATH_SOLVER import clean_maurer_img, convert_path_list_to_img_px_coords, transform_path_to_pose_array
+    from ._PRCS_PATH_SOLVER import clean_maurer_img, convert_path_list_to_img_px_coords, transform_path_to_pose_array, transform_pixel_to_point
     from ._RUN_D3D import runD3D_maze_locators, runD3D_maurer_filter
 
 
