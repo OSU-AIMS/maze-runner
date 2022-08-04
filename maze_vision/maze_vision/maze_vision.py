@@ -7,10 +7,12 @@
 import os
 import cv2
 import numpy as np
-from ament_index_python.packages import get_package_prefix
 
 from maze_solver.solve import MazeSolver, SolverFactory
 
+from ament_index_python.packages import get_package_prefix
+from geometry_msgs.msg import Pose
+from geometry_msgs.msg import PoseArray
 from sensor_msgs.msg import CameraInfo
 
 # import tf_transformations
@@ -44,6 +46,9 @@ class MazeVision():
         self.sf = SolverFactory()
         _, self.solve_algorithm = self.sf.createsolver(self.sf.Choices[2])
 
+        # Results Collection
+        self.current_result = self.ReturnStruct()
+
         # Setup Runtime Workspace
         if not os.path.exists(self.dir_wksp):
             os.makedirs(self.dir_wksp)
@@ -56,6 +61,14 @@ class MazeVision():
     from ._PRCS_DEPTH import smooth_depth_map
     from ._PRCS_PATH_SOLVER import clean_maurer_img, convert_path_list_to_img_px_coords, transform_path_to_pose_array
     from ._RUN_D3D import runD3D_maze_locators, runD3D_maurer_filter
+
+
+    '''Return Data Structure'''
+    class ReturnStruct():
+        def __init__(self) -> None:
+            self.path_array = PoseArray()
+            self.maze_origin = Pose()
+            self.solved_maze = np.empty(shape=[100,100])
 
 
     '''Runner'''
@@ -86,25 +99,27 @@ class MazeVision():
             maurer_image = self.clean_maurer_img(result_img)
 
             # Run Python Maze Solver on Cleaned Image
-            path_wrt_maze, solved_img = MazeSolver(maurer_image, self.solve_algorithm)
+            path_wrt_maze, self.current_result.solved_maze = MazeSolver(maurer_image, self.solve_algorithm)
 
             # Convert to PoseArray Msg
             path_wrt_image = self.convert_path_list_to_img_px_coords(transform_ = self.fma.get_maze_origin_transform_matrix(), path = path_wrt_maze)
-            path_as_pose_array = self.transform_path_to_pose_array(path_wrt_image, intrinsics=camera_info, dmap=image_depth)
+            self.current_result.path_array = self.transform_path_to_pose_array(path_wrt_image, intrinsics=camera_info, dmap=image_depth)
 
             # Debug
             if self.debug:
                 cv2.imwrite('debug_step5_cv2_cleanup.tiff', thresh)
                 cv2.imwrite('debug_step6_maurer_cleaned.tiff', maurer_image)
-                cv2.imwrite('debug_step7_solved_path.tiff', solved_img)
+                cv2.imwrite('debug_step7_solved_path.tiff', self.current_result.solved_maze)
 
-            # Return Results
-            # result = [features.scale, projected_2d_pose, maze_pose_relative_2_camera, path]
-
-            return [], solved_img.astype('uint8')
+            return 0
         
         else:
             return 1
+
+    '''Getters'''
+    def get_results(self):
+        return self.current_result
+
 
 
 

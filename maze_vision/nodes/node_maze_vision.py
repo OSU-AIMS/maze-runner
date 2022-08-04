@@ -18,16 +18,15 @@ from rclpy.node import Node
 from maze_vision import MazeVision
 
 import numpy as np
+from copy import deepcopy
 
 import message_filters
 
-from maze_msgs.msg import MazeData
+# from maze_msgs.msg import MazeData
 from std_msgs.msg import Header
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import CameraInfo
-from geometry_msgs.msg import Quaternion
-from geometry_msgs.msg import Pose2D
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import PoseArray
 from geometry_msgs.msg import Pose
 
 from cv_bridge import CvBridge, CvBridgeError
@@ -77,6 +76,9 @@ class VisionProcessingControl(Node):
         self.mviz = MazeVision(set_debug=False)
         self.cvbridge = CvBridge()
 
+        # Last Results
+        self.last_result = self.mviz.ReturnStruct()
+
         # Report
         self.get_logger().info("Vision Post-Processing Node Started")
 
@@ -119,39 +121,25 @@ class VisionProcessingControl(Node):
             if runner_feedback == 1:
                 self.get_logger().warn("Maze Vision unable to process inputs.")
             else:
-                vision_data, solved_maze_img = runner_feedback
+                # Collect results from runner
+                r = self.mviz.get_results()
 
-
-                # TODO: post-process pose array for path
-                # found_path = vision_data[3]
-                found_path =[Pose]
-
-                ## Build message
+                # Common header
                 h = Header()
-
                 h.stamp     = self.get_clock().now().to_msg()
                 h.frame_id  = self.color.header.frame_id
 
-                # Build Maze Feature Data Message
-                msg = MazeData
-                msg.header           = h
-                # msg.scale            = vision_data[0] # TODO: Assertion on data type
-                # msg.projected_origin = Pose2D(vision_data[1][0], vision_data[1][1], vision_data[1][2])
+                # Pub Pose Array 
+                r.path_array.header.stamp = h.stamp     # frame_id already defined upstream, just synching time stamp here
+                self.pub_raw_path.publish(r.path_array)
 
-                # p = Pose
-                # p.position    = Point(vision_data[2][0], vision_data[2][1], vision_data[2][2])
-                # p.orientation = Quaternion(vision_data[2][3], vision_data[2][4], vision_data[2][5], vision_data[2][6])
-                # msg.pose_relative_2_camera = p
-
-                # msg.path = found_path
-
-                # Build Solved Maze Image Message
-                msg_img = self.cvbridge.cv2_to_imgmsg(solved_maze_img, 'rgb8')
+                # Pub Solved Maze Image
+                msg_img = self.cvbridge.cv2_to_imgmsg(r.solved_maze, 'rgb8')
                 msg_img.header = h
-
-                ## Publish message
-                # self.pub_maze_data.publish(msg)
                 self.pub_solved_maze.publish(msg_img)
+
+                # Store Results
+                self.last_result = deepcopy(r)
 
             # Process Timer ~ End
             self.get_logger().info("Vision Post-Processer took: " + str(self.get_clock().now() - start) + " seconds.")
