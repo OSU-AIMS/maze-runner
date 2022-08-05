@@ -38,20 +38,20 @@
         <!-- Physical Hardware: Intel Realsense D435 or D455 -->
         <include file="$(find-pkg-share realsense2_camera)/launch/rs_launch.py" >
             <arg name="camera_name"         value="rs1" />
-            <arg name="initial_reset"       value="false" />
+            <arg name="initial_reset"       value="true" />
 
             <arg name="enable_color"        value="true" />
-            <arg name="rgb_camera.profile"  value="1280,720,15" />
+            <arg name="rgb_camera.profile"  value="640,480,15" /> <!-- <arg name="rgb_camera.profile"  value="1280,720,15" /> -->
 
             <arg name="enable_depth"        value="true" />
-            <arg name="depth_module.profile" value="1280,720,15" />
+            <arg name="depth_module.profile" value="640,480,15" /> <!-- 1280,720,15 -->
 
             <arg name="enable_sync"         value="true" />
             <arg name="align_depth.enable"  value="true" />
             <arg name="clip_distance"       value="3.0" />
             <arg name="pointcloud.enable"   value="true" />
         </include>
-        <node pkg="tf2_ros" exec="static_transform_publisher" name="camera_mnt_2_camera" args="0 0 0 0 0 0 1 camera_link rs1_color_frame" respawn="true" /> <!-- Issues with this not working due to delayed start of realsense -->
+        <!-- <node pkg="tf2_ros" exec="static_transform_publisher" name="camera_mnt_2_camera" args="0 0 0 0 0 0 1 camera_link rs1_color_frame" respawn="true" /> Issues with this not working due to delayed start of realsense -->
     </group>
 
 

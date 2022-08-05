@@ -70,7 +70,7 @@ def MazeSolver(input_img: np.ndarray, solver: Maze):
                 output_img[a[1],y] = px
     
     ## Output Solution
-    return resultpath_flipped, output_img
+    return resultpath_flipped, output_img.astype('uint8')
 
 
 def main():

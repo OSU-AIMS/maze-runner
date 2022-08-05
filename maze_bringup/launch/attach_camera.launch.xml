@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="camera_mnt_2_camera" args="0 0 0 0 0 0 1 camera_link rs1_color_frame" respawn="true" /> <!-- Issues with this not working due to delayed start of realsense -->
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="camera_mnt_2_camera" args="0 0 0 0 0 0 1 camera_link rs1_depth_frame" respawn="true" /> 
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="camera_mnt_2_camera" args="0 0 0 0 0 0 1 camera_link rs1_infra1_frame" respawn="true" /> 
+    <node pkg="tf2_ros" exec="static_transform_publisher" name="camera_mnt_2_camera" args="0 0 0 0 0 0 1 camera_link rs1_infra2_frame" respawn="true" /> 
+</launch>

@@ -4,7 +4,6 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Grid1/Status1
         - /PointCloud21
       Splitter Ratio: 0.5
     Tree Height: 617
@@ -78,15 +77,15 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        camera_mnt:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         eef_base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
+        eef_camera_mnt:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         link_1_s:
           Alpha: 1
           Show Axes: false
@@ -145,6 +144,7 @@ Visualization Manager:
       Visibility:
         Grid: true
         PointCloud2: true
+        PoseArray: true
         RobotModel: true
         Value: true
       Zoom Factor: 1
@@ -158,7 +158,7 @@ Visualization Manager:
       Channel Name: intensity
       Class: rviz_default_plugins/PointCloud2
       Color: 255; 255; 255
-      Color Transformer: ""
+      Color Transformer: RGB8
       Decay Time: 0
       Enabled: true
       Invert Rainbow: false
@@ -167,7 +167,7 @@ Visualization Manager:
       Min Color: 0; 0; 0
       Min Intensity: 0
       Name: PointCloud2
-      Position Transformer: ""
+      Position Transformer: XYZ
       Selectable: false
       Size (Pixels): 3
       Size (m): 0.009999999776482582
@@ -180,6 +180,26 @@ Visualization Manager:
         Value: /rs1/depth/color/points
       Use Fixed Frame: true
       Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Arrow Length: 0.30000001192092896
+      Axes Length: 0.0020000000949949026
+      Axes Radius: 0.009999999776482582
+      Class: rviz_default_plugins/PoseArray
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.07000000029802322
+      Head Radius: 0.029999999329447746
+      Name: PoseArray
+      Shaft Length: 0.23000000417232513
+      Shaft Radius: 0.009999999776482582
+      Shape: Axes
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+        Value: /raw_path
       Value: true
   Enabled: true
   Global Options:
@@ -224,25 +244,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 3.045034170150757
+      Distance: 2.1239519119262695
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
+        X: 0.062406085431575775
+        Y: 0.1968235820531845
+        Z: 0.025642618536949158
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6697971820831299
+      Pitch: 0.7347971200942993
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.6003982424736023
+      Yaw: 5.763581275939941
     Saved: ~
 Window Geometry:
   Camera:
@@ -260,5 +280,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 424
-  Y: 104
+  X: 2144
+  Y: 193
