@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<launch>
+  <arg name="robot_description" default="$(command 'xacro $(find-pkg-share maze_support)/urdf/wc3.xacro')"/>
+  <arg name="robot_description_semantic" default="$(command 'cat $(find-pkg-share maze_support)/config/wc3.srdf')"/>
+  <arg name="verbose" default="False"/>
+  <arg name="touch_links" default="[]"/>
+
+  <node pkg="maze_motion_planning" exec="maze_motion_planning_node">
+    <param name="robot_description" value="$(var robot_description)"/>
+    <param name="robot_description_semantic" value="$(var robot_description_semantic)"/>
+    <param name="verbose" value="$(var verbose)"/>
+    <param name="touch_links" value="$(var touch_links)"/>
+  </node>
+
+</launch>

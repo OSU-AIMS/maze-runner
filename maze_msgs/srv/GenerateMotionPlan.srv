@@ -1,0 +1,19 @@
+# Request
+
+# Tool Paths - the input tool paths that need to be planned on. 
+# Single pose array contains complete toolpath for navigating the maze.
+geometry_msgs/PoseArray tool_path
+
+# Params
+string motion_group
+string tcp_frame
+
+---
+# Response
+
+# Motion Plan - a joint trajectory for the robot to follow
+trajectory_msgs/JointTrajectory motion_plan
+
+# Success and error information
+bool success
+string message
