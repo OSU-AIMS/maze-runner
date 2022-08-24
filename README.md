@@ -1,7 +1,7 @@
 # Maze Runner :robot: :runner:
 
 <a href="https://docs.ros.org/en/foxy/index.html"><img src="https://img.shields.io/badge/ROS-Foxy-blue"/></a>
-<a href="https://www.ros.org/reps/rep-2004.html"><img src="https://img.shields.io/badge/REP_2004-Quality_5-red"/></a>
+<a href="https://www.ros.org/reps/rep-2004.html"><img src="https://img.shields.io/badge/REP_2004-Quality_4-red"/></a>
 
 Sample package for using a 6-axis robotic arm to navigate a maze. Intended to support the development of robotic applications at the Artifically Intelligent Manufacturing Systems (AIMS) Lab at The Ohio State University.
 
