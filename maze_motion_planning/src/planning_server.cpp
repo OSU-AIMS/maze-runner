@@ -328,8 +328,6 @@ int main(int argc, char** argv)
     // Initialize
     rclcpp::init(argc, argv);
     std::shared_ptr<rclcpp::Node> node = rclcpp::Node::make_shared("maze_planning_server");
-
-    // rclcpp::Node::SharedPtr node = std::make_shared<rclcpp::Node>("maze_planning_server"); //old
     RCLCPP_INFO(node->get_logger(), "Planning Server Node Initialized");
 
     // Server
