@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 
-<robot name="manipulator" xmlns:xacro="http://ros.org/wiki/xacro">
+<robot name="wc3" xmlns:xacro="http://ros.org/wiki/xacro">
 
     <!-- Robot -->
     <xacro:include filename="$(find motoman_gp7_support)/urdf/gp7_macro.xacro" />
