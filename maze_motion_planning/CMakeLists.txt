@@ -31,17 +31,17 @@ add_executable(${PROJECT_NAME}_node src/planning_server.cpp)
 ament_target_dependencies(${PROJECT_NAME}_node ${ROS2_DEPS})
 target_link_libraries(${PROJECT_NAME}_node tesseract::tesseract_command_language tesseract::tesseract_process_managers)
 
-# # Plugin Library
-# add_library(${PROJECT_NAME}_plugins SHARED src/motoman_hc10_ikfast_plugin.cpp)
-# target_link_libraries(${PROJECT_NAME}_plugins PUBLIC ${LAPACK_LIBRARIES} tesseract::tesseract_common
-#                                                      tesseract::tesseract_kinematics_ikfast)
-# target_include_directories(${PROJECT_NAME}_plugins SYSTEM PUBLIC ${LAPACK_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
+# Plugin Library
+add_library(${PROJECT_NAME}_plugins SHARED src/motoman_gp7_ikfast_plugin.cpp)
+target_link_libraries(${PROJECT_NAME}_plugins PUBLIC ${LAPACK_LIBRARIES} tesseract::tesseract_common
+                                                     tesseract::tesseract_kinematics_ikfast)
+target_include_directories(${PROJECT_NAME}_plugins SYSTEM PUBLIC ${LAPACK_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 
 # Install the executable(s)
 install(TARGETS ${PROJECT_NAME}_node DESTINATION lib/${PROJECT_NAME})
 
-# # Install the library(ies)
-# install(TARGETS ${PROJECT_NAME}_plugins EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
+# Install the library(ies)
+install(TARGETS ${PROJECT_NAME}_plugins EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -49,7 +49,7 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_dependencies(${ROS2_DEPS})
-# ament_export_targets(${PROJECT_NAME}-targets HAS_LIBRARY_TARGET)
+ament_export_targets(${PROJECT_NAME}-targets HAS_LIBRARY_TARGET)
 ament_package()
 
 install(DIRECTORY launch DESTINATION share/${PROJECT_NAME}/)
